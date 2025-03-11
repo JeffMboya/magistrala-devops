@@ -1,0 +1,21 @@
+dependencies:
+- name: Supermq
+  repository: https://absmach.github.io/supermq-devops/
+  version: 0.16.5
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.2.10
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.2.10
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.2.10
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.2.10
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.2.10
+digest: sha256:558f70a88a7d510e9a370117ed33bf2df92cd94668724c71234422b9134022ff
+generated: "2025-03-12T21:59:33.559618509+03:00"

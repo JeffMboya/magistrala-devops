@@ -1,0 +1,121 @@
+---
+# Copyright (c) Abstract Machines
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-postgres-reader
+  labels:
+    app: postgres-reader
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ default .Values.defaults.replicaCount .Values.postgresreader.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: postgres-reader
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: postgres-reader
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-postgres-reader
+          image: "{{ default (printf "%s/postgres-reader" .Values.defaults.image.rootRepository) .Values.postgresreader.image.repository }}:{{ default .Values.defaults.image.tag .Values.postgresreader.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy  .Values.postgresreader.image.pullPolicy }}
+          env:
+            - name: MG_POSTGRES_READER_LOG_LEVEL
+              value: {{ default .Values.defaults.logLevel  .Values.postgresreader.logLevel | quote }}
+            - name: MG_POSTGRES_READER_HTTP_HOST
+              value: "0.0.0.0"
+            - name: MG_POSTGRES_READER_HTTP_PORT
+              value: {{ .Values.postgresreader.httpPort | quote }}
+            - name: MG_POSTGRES_READER_HTTP_SERVER_CERT
+              value: {{ .Values.postgresreader.httpServerCert | quote }}
+            - name: MG_POSTGRES_READER_HTTP_SERVER_KEY
+              value: {{ .Values.postgresreader.httpServerKey | quote }}
+            - name: MG_POSTGRES_HOST
+            {{- if .Values.postgresqlreader.enabled }}
+              value: "{{ .Release.Name }}-postgresqlreader"
+            {{- else }}
+              value: {{ .Values.postgresqlreader.host | quote }}
+            {{- end }}
+            - name: MG_POSTGRES_PORT
+              value: {{ .Values.postgresqlreader.port | quote  }}
+            - name: MG_POSTGRES_USER
+              value: {{ .Values.postgresqlreader.username | quote  }}
+            - name: MG_POSTGRES_PASS
+              value: {{ .Values.postgresqlreader.password | quote  }}
+            - name: MG_POSTGRES_NAME
+              value: {{ .Values.postgresqlreader.database | quote }}
+            - name: MG_POSTGRES_SSL_MODE
+              value: {{ .Values.postgresqlreader.sslMode | quote }}
+            - name: MG_POSTGRES_SSL_CERT
+              value: {{ .Values.postgresqlreader.sslCert | quote }}
+            - name: MG_POSTGRES_SSL_KEY
+              value: {{ .Values.postgresqlreader.sslKey | quote }}
+            - name: MG_POSTGRES_SSL_ROOT_CERT
+              value: {{ .Values.postgresqlreader.sslRootCert | quote }}
+            - name: SMQ_CLIENTS_GRPC_URL
+              value: {{ .Release.Name }}-envoy:{{ .Values.supermq.clients.authGrpcPort }}
+            - name: SMQ_CLIENTS_GRPC_TIMEOUT
+              value: {{ .Values.supermq.clients.grpcTimeout | quote }}
+            - name: MG_THINGS_AUTH_GRPC_CLIENT_CERT
+              value: {{ .Values.supermq.clients.grpcClientCert | quote }}
+            - name: SMQ_CLIENTS_GRPC_CLIENT_KEY
+              value: {{ .Values.supermq.clients.grpcClientKey | quote }}
+            - name: SMQ_CLIENTS_GRPC_SERVER_CA_CERTS
+              value: {{ .Values.supermq.clients.grpcServerCACerts | quote }}
+            - name: SMQ_AUTH_GRPC_URL
+              value: {{ .Release.Name }}-envoy:{{ .Values.supermq.auth.grpcPort }}
+            - name: SMQ_AUTH_GRPC_TIMEOUT
+              value: {{ .Values.supermq.auth.grpcTimeout | quote }}
+            - name: SMQ_AUTH_GRPC_CLIENT_CERT
+              value: {{ .Values.supermq.auth.grpcClientCert | quote }}
+            - name: SMQ_AUTH_GRPC_CLIENT_KEY
+              value: {{ .Values.supermq.auth.grpcClientKey | quote }}
+            - name: SMQ_AUTH_GRPC_SERVER_CA_CERTS
+              value: {{ .Values.supermq.auth.grpcServerCACerts | quote }}
+            - name: MG_SEND_TELEMETRY
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgresreader.sendTelemetry | quote }}
+            - name: MG_POSTGRES_READER_INSTANCE_ID
+              value: {{ .Values.postgresreader.instanceId | quote }}
+          ports:
+            - containerPort: {{ .Values.postgresreader.httpPort | int }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.postgresreader.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.postgresreader.httpPort }}
+              scheme: HTTP
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.postgresreader.httpPort }}
+              scheme: HTTP
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+      {{- with .Values.postgresreader.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgresreader.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgresreader.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

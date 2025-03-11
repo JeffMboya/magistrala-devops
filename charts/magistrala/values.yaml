@@ -1,0 +1,472 @@
+---
+# Copyright (c) Abstract Machines
+# SPDX-License-Identifier: Apache-2.0
+
+supermq:
+  enabled: true
+  ingress:
+    enabled: true
+    ## Uncomment this block for TLS support in public ingress
+    # annotations:
+    #   nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    #   nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    #   cert-manager.io/issuer: "letsencrypt-staging"
+
+    ## Uncomment this block for TLS support in public ingress
+    # hostname: "magistrala-stage.ddns.net"
+    # tls:
+    #   hostname: "stage.magistrala.abstractmachines.fr"
+    #   secret: "letsencrypt-staging-certificate-secret"
+
+  auth:
+    grpcServerCACerts: ""
+
+  clients:
+    grpcServerCACerts: ""
+
+  nginx:
+    hostname: "localhost"
+
+defaults:
+  image:
+    pullPolicy: "IfNotPresent"
+    rootRepository: "magistrala"
+    tag: "latest"
+    # pullSecrets: {}
+  logLevel: "error"
+  sendTelemetry: "true"
+  replicaCount: 1
+
+bootstrap:
+  enabled: true
+  image: {}
+  #   pullSecrets: {}
+  #   repository: "magistrala/bootstrap"
+  #   tag: "latest"
+  #   pullPolicy: "IfNotPresent"
+  # sendTelemetry: true
+  # logLevel: "error"
+  jaegerTraceRatio: 1.0
+  replicaCount: 1
+  httpPort: 9013
+  encKey: "v7aT0HGxJxt2gULzr3RHwf4WIf6DusPp"
+  eventConsumer: bootstrap
+  httpServerCert: ""
+  httpServerKey: ""
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+postgresqlbootstrap:
+  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+  enabled: true
+  name: postgresql-bootstrap
+  host: postgresql-bootstrap
+  port: &postgresqlBootstrapPort 5432
+  database: &postgresqlBootstrapDatabase bootstrap
+  username: &postgresqlBootstrapUsername magistrala
+  password: &postgresqlBootstrapPassword magistrala
+  sslMode: "disable"
+  sslCert: ""
+  sslKey: ""
+  sslRootCert: ""
+  global:
+    postgresql:
+      auth:
+        postgresPassword: *postgresqlBootstrapPassword
+        username: *postgresqlBootstrapUsername
+        password: *postgresqlBootstrapPassword
+        database: *postgresqlBootstrapDatabase
+      service:
+        ports:
+          postgresql: *postgresqlBootstrapPort
+  primary:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "150m"
+        memory: "192Mi"
+    persistence:
+      enabled: true
+      size: 2Gi
+
+postgresreader:
+  enabled: true
+  image:
+    {}
+    # repository: "magistrala/postgres-reader"
+    # tag: "latest"
+    # pullPolicy: IfNotPresent
+  # sendTelemetry: "true"
+  # logLevel: "error"
+  replicaCount: 1
+  httpPort: "9090"
+  httpServerCert: ""
+  httpServerKey: ""
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+postgresqlreader:
+  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+  enabled: true
+  name: postgresql-reader
+  host: postgresql-reader
+  port: &postgresqlBootstrapPort 5432
+  database: &postgresqlBootstrapDatabase postgresreader
+  username: &postgresqlBootstrapUsername magistrala
+  password: &postgresqlBootstrapPassword magistrala
+  sslMode: "disable"
+  sslCert: ""
+  sslKey: ""
+  sslRootCert: ""
+  global:
+    postgresql:
+      auth:
+        postgresPassword: *postgresqlBootstrapPassword
+        username: *postgresqlBootstrapUsername
+        password: *postgresqlBootstrapPassword
+        database: *postgresqlBootstrapDatabase
+      service:
+        ports:
+          postgresql: *postgresqlBootstrapPort
+  primary:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "150m"
+        memory: "192Mi"
+    persistence:
+      enabled: true
+      size: 2Gi
+
+postgreswriter:
+  image:
+    {}
+    # repository: "magistrala/postgres-writer"
+    # tag: "latest"
+    # pullPolicy: IfNotPresent
+  jaegerTraceRatio: 1.0
+  logLevel: "error"
+  sendTelemetry: "true"
+  replicaCount: 1
+  configPath: "/config.toml"
+  httpPort: "9010"
+  httpServerCert: ""
+  httpServerKey: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+postgresqlwriter:
+  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+  enabled: true
+  name: postgresql-writer
+  host: postgresql-writer
+  port: &postgresqlBootstrapPort 5432
+  database: &postgresqlBootstrapDatabase postgreswriter
+  username: &postgresqlBootstrapUsername magistrala
+  password: &postgresqlBootstrapPassword magistrala
+  sslMode: "disable"
+  sslCert: ""
+  sslKey: ""
+  sslRootCert: ""
+  global:
+    postgresql:
+      auth:
+        postgresPassword: *postgresqlBootstrapPassword
+        username: *postgresqlBootstrapUsername
+        password: *postgresqlBootstrapPassword
+        database: *postgresqlBootstrapDatabase
+      service:
+        ports:
+          postgresql: *postgresqlBootstrapPort
+  primary:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "150m"
+        memory: "192Mi"
+    persistence:
+      enabled: true
+      size: 2Gi
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+provision:
+  enabled: true
+  image:
+    {}
+    # pullSecrets: {}
+    # repository: "supermq/provision"
+    # tag: "latest"
+    # pullPolicy: "IfNotPresent"
+  # sendTelemetry: "true"
+  replicaCount: 1
+  logLevel: "error"
+  httpPort: 9016
+  configFile: "/configs/config.toml"
+  envClientsTLS: "false"
+  serverCert: ""
+  serverKey: ""
+  user: ""
+  username: ""
+  password: ""
+  apiKey: ""
+  usersUrl: "http://users:9002"
+  clientsUrl: "http://clients:9006"
+  certsUrl: "http://certs:9019"
+  bootstrapUrl: "http://bootstrap:9013"
+  bsConfigProvisioning: "true"
+  bsAutoWhitelist: "true"
+  bsContent: ""
+  x509Provisioning: "false"
+  certsHoursValid: "2400h"
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+re:
+  image:
+    repository: "ghcr.io/absmach/magistrala/re"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  jaegerTraceRatio: 1.0
+  replicaCount: 1
+  sendTelemetry: "true"
+  httpPort: 9008
+  logLevel: "error"
+  httpServerCert: ""
+  httpServerKey: ""
+  grpcTimeout: "300s"
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+postgresqlre:
+  enabled: true
+  name: postgresql-re
+  host: postgresql-re
+  port: &postgresqlRePort 5432
+  database: &postgresqlReDatabase rules_engine
+  username: &postgresqlReUsername magistrala
+  password: &postgresqlRePassword magistrala
+  sslMode: "disable"
+  sslCert: ""
+  sslKey: ""
+  sslRootCert: ""
+  global:
+    postgresql:
+      auth:
+        postgresPassword: *postgresqlRePassword
+        username: *postgresqlReUsername
+        password: *postgresqlRePassword
+        database: *postgresqlReDatabase
+      service:
+        ports:
+          postgresql: *postgresqlRePort
+  primary:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "150m"
+        memory: "192Mi"
+    persistence:
+      enabled: true
+      size: 2Gi
+
+timescaledb:
+  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+  enabled: true
+  name: timescalerw
+  host: timescalerw
+  port: &messagesRwTimescalePort 5432
+  database: &messagesRwTimescaleDatabase supermq
+  username: &messagesRwTimescaleUsername supermq
+  password: &messagesRwTimescalePassword supermq
+  sslMode: ""
+  sslCert: ""
+  sslKey: ""
+  sslRootCert: ""
+  reader:
+    image:
+      {}
+      # pullSecrets: {}
+      # repository: "magistrala/timescale-reader"
+      # tag: "latest"
+      # pullPolicy: "IfNotPresent"
+    # jaegerTraceRatio: 1.0
+    sendTelemetry: true
+    logLevel: "error"
+    enabled: true
+    httpPort: 9011
+    httpServerCert: ""
+    httpServerKey: ""
+    instanceId: ""
+    # nodeSelector: {}
+    # affinity: {}
+    # tolerations: {}
+  writer:
+    image:
+      {}
+      # pullSecrets: {}
+      # repository: "magistrala/timescale-writer"
+      # tag: "latest"
+      # pullPolicy: "IfNotPresent"
+    # jaegerTraceRatio: 1.0
+    # sendTelemetry: true
+    # logLevel: "info"
+    # nodeSelector: {}
+    # affinity: {}
+    # tolerations: {}
+    enabled: true
+    httpPort: 9012
+    httpServerCert: ""
+    httpServerKey: ""
+    instanceId: ""
+  ## Configurations of Bitnami postgres
+  global:
+    postgresql:
+      auth:
+        postgresPassword: *messagesRwTimescalePassword
+        username: *messagesRwTimescaleUsername
+        password: *messagesRwTimescalePassword
+        database: *messagesRwTimescaleDatabase
+      service:
+        ports:
+          postgresql: *messagesRwTimescalePort
+  primary:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "150m"
+        memory: "192Mi"
+    persistence:
+      enabled: true
+      size: 2Gi
+    extraVolumeMounts:
+      - name: postgresql-run
+        mountPath: /var/run/postgresql
+    extraVolumes:
+      - name: postgresql-run
+        emptyDir: {}
+  image:
+    registry: docker.io
+    repository: timescale/timescaledb
+    tag: latest-pg12
+
+postgresdb:
+  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+  enabled: true
+  name: postgresrw
+  host: postgresrw
+  port: &messagesRwPostgresPort 5432
+  database: &messagesRwPostgresDatabase messages
+  username: &messagesRwPostgresUsername magistrala
+  password: &messagesRwPostgresPassword magistrala
+  reader:
+    image:
+      {}
+      # pullSecrets: {}
+      # repository: "magistrala/postgres-reader"
+      # tag: "latest"
+      # pullPolicy: "IfNotPresent"
+    # jaegerTraceRatio: 1.0
+    # sendTelemetry: true
+    # logLevel: "info"
+    enabled: true
+    httpPort: 9011
+    # nodeSelector: {}
+    # affinity: {}
+    # tolerations: {}
+  writer:
+    image:
+      {}
+      # pullSecrets: {}
+      # repository: "magistrala/postgres-writer"
+      # tag: "latest"
+      # pullPolicy: "IfNotPresent"
+    # jaegerTraceRatio: 1.0
+    # sendTelemetry: true
+    # logLevel: "info"
+    # nodeSelector: {}
+    # affinity: {}
+    # tolerations: {}
+    enabled: true
+    httpPort: 9012
+  ## Configurations of Bitnami postgres
+  global:
+    postgresql:
+      auth:
+        postgresPassword: *messagesRwPostgresPassword
+        username: *messagesRwPostgresUsername
+        password: *messagesRwPostgresPassword
+        database: *messagesRwPostgresDatabase
+      service:
+        ports:
+          postgresql: *messagesRwPostgresPort
+  primary:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "150m"
+        memory: "192Mi"
+  persistence:
+    enabled: true
+    size: 2Gi
+  image:
+    registry: docker.io
+    repository: postgres/postgresdb
+    tag: latest-pg12

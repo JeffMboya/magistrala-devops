@@ -1,0 +1,133 @@
+---
+# Copyright (c) Abstract Machines
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-postgres-writer-config
+data:
+  config.toml: |
+    [subscriber]
+    subjects = ["channels.>"]
+
+    [transformer]
+    format = "senml"
+    content_type = "application/senml+json"
+    time_fields = [
+      { field_name = "seconds_key", field_format = "unix", location = "UTC" },
+      { field_name = "millis_key", field_format = "unix_ms", location = "UTC" },
+      { field_name = "micros_key", field_format = "unix_us", location = "UTC" },
+      { field_name = "nanos_key", field_format = "unix_ns", location = "UTC" }
+    ]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-postgres-writer
+  labels:
+    app: postgres-writer
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ default .Values.defaults.replicaCount .Values.postgreswriter.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: postgres-writer
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: postgres-writer
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-postgres-writer
+          image: "{{ default (printf "%s/postgres-writer" .Values.defaults.image.rootRepository) .Values.postgreswriter.image.repository }}:{{ default .Values.defaults.image.tag .Values.postgreswriter.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.postgreswriter.image.pullPolicy }}
+          env:
+            - name: MG_POSTGRES_WRITER_LOG_LEVEL
+              value: {{ default .Values.defaults.logLevel  .Values.postgreswriter.logLevel | quote }}
+            - name: MG_POSTGRES_WRITER_CONFIG_PATH
+              value: {{ .Values.postgreswriter.configPath | quote }}
+            - name: MG_POSTGRES_WRITER_HTTP_HOST
+              value: "0.0.0.0"
+            - name: MG_POSTGRES_WRITER_HTTP_PORT
+              value: {{ .Values.postgreswriter.httpPort | quote }}
+            - name: MG_POSTGRES_WRITER_HTTP_SERVER_CERT
+              value: {{ .Values.postgreswriter.httpServerCert | quote }}
+            - name: MG_POSTGRES_WRITER_HTTP_SERVER_KEY
+              value: {{ .Values.postgreswriter.httpServerKey | quote }}
+            - name: MG_POSTGRES_HOST
+            {{- if .Values.postgresqlwriter.enabled }}
+              value: "{{ .Release.Name }}-postgresqlwriter"
+            {{- else }}
+              value: {{ .Values.postgresqlwriter.host | quote }}
+            {{- end }}
+            - name: MG_POSTGRES_PORT
+              value: {{ .Values.postgresqlwriter.port | quote  }}
+            - name: MG_POSTGRES_USER
+              value: {{ .Values.postgresqlwriter.username | quote  }}
+            - name: MG_POSTGRES_PASS
+              value: {{ .Values.postgresqlwriter.password | quote  }}
+            - name: MG_POSTGRES_NAME
+              value: {{ .Values.postgresqlwriter.database | quote }}
+            - name: MG_POSTGRES_SSL_MODE
+              value: {{ .Values.postgresqlwriter.sslMode | quote }}
+            - name: MG_POSTGRES_SSL_CERT
+              value: {{ .Values.postgresqlwriter.sslCert | quote }}
+            - name: MG_POSTGRES_SSL_KEY
+              value: {{ .Values.postgresqlwriter.sslKey | quote }}
+            - name: MG_POSTGRES_SSL_ROOT_CERT
+              value: {{ .Values.postgresqlwriter.sslRootCert | quote }}
+            - name: SMQ_MESSAGE_BROKER_URL
+              value: {{ .Values.supermq.nats.enabled | ternary (printf "nats://%s-nats:%d" .Release.Name (.Values.supermq.nats.config.nats.port | int )) .Values.supermq.nats.externalAddress }}
+            - name: SMQ_JAEGER_URL
+              value: {{ .Values.supermq.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.supermq.jaeger.collector.service.otlp.http.port | int )) .Values.supermq.jaeger.externalUrl }}
+            - name: SMQ_JAEGER_TRACE_RATIO
+              value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgreswriter.jaegerTraceRatio | quote }}
+            - name: SMQ_SEND_TELEMETRY
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgreswriter.sendTelemetry | quote }}
+          ports:
+            - containerPort: {{ .Values.postgreswriter.httpPort | int }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.bootstrap.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.postgreswriter.httpPort }}
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.postgreswriter.httpPort }}
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: "/config.toml"
+              subPath: "config.toml"
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-postgres-writer-config
+      {{- with .Values.postgreswriter.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgreswriter.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgreswriter.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

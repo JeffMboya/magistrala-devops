@@ -1,0 +1,17 @@
+# Copyright (c) Abstract Machines
+# SPDX-License-Identifier: Apache-2.0
+
+{{- if .Values.provision.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-provision
+spec:
+  selector:
+    app: {{ .Release.Name }}
+    component: provision
+  ports:
+    - protocol: TCP
+      port: {{ .Values.provision.httpPort }}
+      name: {{ .Release.Name }}-provision-{{ .Values.provision.httpPort }}
+{{- end }}

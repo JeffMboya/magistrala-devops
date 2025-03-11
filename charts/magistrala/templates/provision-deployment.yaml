@@ -1,0 +1,179 @@
+# Copyright (c) Abstract Machines
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-provision-config
+data:
+  config.toml: |
+    [bootstrap]
+      [bootstrap.content]
+        [bootstrap.content.agent.edgex]
+          url = "http://localhost:48090/api/v1/"
+
+        [bootstrap.content.agent.log]
+          level = "info"
+
+        [bootstrap.content.agent.mqtt]
+          mtls = false
+          qos = 0
+          retain = false
+          skip_tls_ver = true
+          url = "localhost:1883"
+
+        [bootstrap.content.agent.server]
+          nats_url = "localhost:4222"
+          port = "9000"
+      
+        [bootstrap.content.agent.heartbeat]
+          interval = "30s"
+      
+        [bootstrap.content.agent.terminal]
+          session_timeout = "30s"
+      
+        [bootstrap.content.export.exp]
+          log_level = "debug"
+          nats = "nats://localhost:4222"
+          port = "8172"
+          cache_url = "localhost:6379"
+          cache_pass = ""
+          cache_db = "0"
+
+        [bootstrap.content.export.mqtt]
+          ca_path = "ca.crt"
+          cert_path = "thing.crt"
+          channel = ""
+          host = "tcp://localhost:1883"
+          mtls = false
+          password = ""
+          priv_key_path = "thing.key"
+          qos = 0
+          retain = false
+          skip_tls_ver = false
+          username = ""
+
+        [[bootstrap.content.export.routes]]
+          mqtt_topic = ""
+          nats_topic = ">"
+          subtopic = ""
+          type = "plain"
+          workers = 10
+
+    [[things]]
+      name = "thing"
+
+      [things.metadata]
+        external_id = "xxxxxx"
+
+    [[channels]]
+      name = "control-channel"
+
+      [channels.metadata]
+        type = "control"
+
+    [[channels]]
+      name = "data-channel"
+
+      [channels.metadata]
+        type = "data"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-provision
+spec:
+  replicas: {{ default .Values.defaults.replicaCount .Values.provision.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: provision
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "{{ .Values.provision.httpPort }}"
+        prometheus.io/scrape: "true"
+      labels:
+        app: {{ .Release.Name }}
+        component: provision
+    spec:
+      {{- with (default .Values.defaults.image.pullSecrets .Values.provision.image.pullSecrets) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      containers:
+        - name: {{ .Release.Name }}-provision
+          image: "{{ default (printf "%s/provision" .Values.defaults.image.rootRepository) .Values.provision.image.repository }}:{{ default .Values.defaults.image.tag .Values.provision.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.provision.image.pullPolicy }}
+          env:
+            - name: MG_PROVISION_LOG_LEVEL
+              value: {{ default .Values.defaults.logLevel .Values.provision.logLevel | quote }}
+            - name: MG_PROVISION_HTTP_PORT
+              value: {{ .Values.provision.httpPort | quote }}
+            - name: MG_PROVISION_CONFIG_FILE
+              value: "/configs/config.toml"
+            - name: MG_PROVISION_ENV_CLIENTS_TLS
+              value: {{ .Values.provision.envClientsTls | quote }}
+            - name: MG_PROVISION_SERVER_CERT
+              value: {{ .Values.provision.serverCert | quote }}
+            - name: MG_PROVISION_SERVER_KEY
+              value: {{ .Values.provision.serverKey | quote }}
+            - name: MG_PROVISION_USERS_LOCATION
+              value:  {{ default (printf "http://%s-users:%s" .Release.Name (.Values.supermq.users.httpPort | toString )) .Values.provision.usersUrl }}
+            - name: MG_PROVISION_THINGS_LOCATION
+              value: {{ default (printf "http://%s-clients:%s" .Release.Name (.Values.supermq.clients.httpPort | toString )) .Values.provision.clientsUrl }}
+            - name: MG_PROVISION_USER
+              value: {{ .Values.provision.user | quote }}
+            - name: MG_PROVISION_USERNAME
+              value: {{ .Values.provision.username | quote }}
+            - name: MG_PROVISION_PASS
+              value: {{ .Values.provision.password | quote }}
+            - name: MG_PROVISION_API_KEY
+              value: {{ .Values.provision.apiKey | quote }}
+            - name: MG_PROVISION_CERTS_SVC_URL
+              value: {{ default (printf "http://%s-certs:%s" .Release.Name (.Values.supermq.certs.httpPort | toString )) .Values.provision.certsUrl }}
+            - name: MG_PROVISION_X509_PROVISIONING
+              value: {{ .Values.provision.x509Provisioning | quote }}
+            - name: MG_PROVISION_BS_SVC_URL
+              value: {{ default (printf "http://%s-certs:%s" .Release.Name (.Values.bootstrap.httpPort | toString )) .Values.provision.bootstrapUrl }}
+            - name: MG_PROVISION_BS_CONFIG_PROVISIONING
+              value: {{ .Values.provision.bsConfigProvisioning | quote }}
+            - name: MG_PROVISION_BS_AUTO_WHITELIST
+              value: {{ .Values.provision.bsAutoWhitelist | quote }}
+            - name: MG_PROVISION_BS_CONTENT
+              value: {{ .Values.provision.bsContent | quote }}
+            - name: MG_PROVISION_CERTS_HOURS_VALID
+              value: {{ .Values.provision.certsHoursValid | quote }}
+            - name: SMQ_SEND_TELEMETRY
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.provision.sendTelemetry | quote }}
+            - name: MG_PROVISION_INSTANCE_ID
+              value: {{ .Values.provision.instanceId | quote }}
+          ports:
+            - containerPort: {{ .Values.provision.httpPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: provision-config
+              mountPath: /configs
+              subPath: config.toml
+      volumes:
+        - name: provision-config
+          configMap:
+            name: {{ .Release.Name }}-provision-config
+            optional: false
+      {{- with .Values.provision.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.provision.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.provision.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
