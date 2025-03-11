@@ -1,0 +1,130 @@
+# Copyright (c) Abstract Machines
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-re-config
+data:
+  config.toml: |
+    # To listen all message broker subjects use default value "channels.>".
+    # To subscribe to specific subjects use values starting by "channels." and
+    # followed by a subtopic (e.g ["channels.<channel_id>.sub.topic.x", ...]).
+    [subscriber]
+    subjects = ["channels.>"]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-re
+spec:
+  replicas: {{ default .Values.defaults.replicaCount .Values.re.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: re
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "{{ .Values.re.httpPort }}"
+        prometheus.io/scrape: "true"
+      labels:
+        app: {{ .Release.Name }}
+        component: re
+    spec:
+      {{- with (default .Values.defaults.image.pullSecrets .Values.re.image.pullSecrets) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      containers:
+        - name: {{ .Release.Name }}-re
+          image: "{{ default (printf "%s/re" .Values.defaults.image.rootRepository) .Values.re.image.repository }}:{{ default .Values.defaults.image.tag .Values.re.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.re.image.pullPolicy }}
+          env:
+            - name: MG_RE_LOG_LEVEL
+              value: {{ default .Values.supermq.defaults.sendTelemetry  .Values.re.logLevel | quote }}
+            - name: MG_RE_HTTP_PORT
+              value: {{ .Values.re.httpPort | quote }}
+            - name: MG_RE_HTTP_HOST
+              value: "0.0.0.0"
+            - name: MG_RE_HTTP_SERVER_CERT
+              value: {{ .Values.re.httpServerCert | quote }}
+            - name: MG_RE_HTTP_SERVER_KEY
+              value: {{ .Values.re.httpServerKey | quote }}
+            - name: MG_RE_DB_HOST
+            {{- if .Values.postgresqlre.enabled }}
+            value: "{{ .Release.Name }}-re-db"
+            {{- else }}
+            value: {{ .Values.postgresqlre.host | quote }}
+            {{- end }}
+            - name: MG_RE_DB_PORT
+              value: {{ .Values.postgresqlre.port | quote  }}
+            - name: MG_RE_DB_USER
+              value: {{ .Values.postgresqlre.username | quote  }}
+            - name: MG_RE_DB_PASS
+              value: {{ .Values.postgresqlre.password | quote  }}
+            - name: MG_RE_DB_NAME
+              value: {{ .Values.postgresqlre.database | quote }}
+            - name: MG_RE_DB_SSL_MODE
+              value: {{ .Values.postgresqlre.sslMode | quote }}
+            - name: MG_RE_DB_SSL_CERT
+              value: {{ .Values.postgresqlre.sslCert | quote }}
+            - name: MG_RE_DB_SSL_KEY
+              value: {{ .Values.postgresqlre.sslKey | quote }}
+            - name: MG_RE_DB_SSL_ROOT_CERT
+              value: {{ .Values.postgresqlre.sslRootCert | quote }}
+            - name: SMQ_MESSAGE_BROKER_URL
+              value: {{ .Values.supermq.nats.enabled | ternary (printf "nats://%s-nats:%d" .Release.Name (.Values.supermq.nats.config.nats.port | int )) .Values.supermq.nats.externalAddress }}
+            - name: SMQ_JAEGER_URL
+              value: {{ .Values.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.jaeger.collector.service.otlp.http.port | int )) .Values.jaeger.externalUrl }}
+            - name: SMQ_JAEGER_TRACE_RATIO
+              value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgreswriter.jaegerTraceRatio | quote }}
+            - name: SMQ_SEND_TELEMETRY
+              value: {{ default .Values.supermq.defaults.sendTelemetry Values.re.sendTelemetry | quote }}
+            - name: SMQ_AUTH_GRPC_URL
+              value: {{ .Release.Name }}-envoy:{{ .Values.supermq.auth.grpcPort }}
+            - name: SMQ_AUTH_GRPC_TIMEOUT
+              value: {{ .Values.supermq.auth.grpcTimeout | quote }}
+            - name: SMQ_AUTH_GRPC_CLIENT_CERT
+              value: {{ .Values.supermq.auth.grpcClientCert | quote }}
+            - name: SMQ_AUTH_GRPC_CLIENT_KEY
+              value: {{ .Values.supermq.auth.grpcClientKey | quote }}
+            - name: SMQ_AUTH_GRPC_SERVER_CA_CERTS
+              value: {{ .Values.supermq.auth.grpcServerCACerts | quote }}
+            - name: SMQ_SPICEDB_PRE_SHARED_KEY
+              value: {{ .Values.supermq.spicedb.grpc.presharedKey | quote }}
+            - name: SMQ_SPICEDB_HOST
+              value: {{ .Release.Name }}-spicedb-envoy
+            - name: SMQ_SPICEDB_PORT
+              value: {{ .Values.supermq.spicedb.grpc.port | quote }}
+            - name: MG_RE_INSTANCE_ID
+              value: {{ .Values.re.instanceId | quote }}
+          ports:
+            - containerPort: {{ .Values.re.httpPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: re-config
+              mountPath: /config.toml
+              subPath: config.toml
+      volumes:
+        - name: re-config
+          configMap:
+            name: {{ .Release.Name }}-re-config
+            optional: false
+      {{- with .Values.re.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.re.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.re.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
