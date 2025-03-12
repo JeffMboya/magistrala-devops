@@ -1,8 +1,8 @@
 # magistrala
 
-![Version: 0.15.1](https://img.shields.io/badge/Version-0.15.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.15.1](https://img.shields.io/badge/AppVersion-0.15.1-informational?style=flat-square)
-
 Magistrala IoT Platform
+
+![Version: 0.15.1](https://img.shields.io/badge/Version-0.15.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.15.1](https://img.shields.io/badge/AppVersion-0.15.1-informational?style=flat-square)
 
 **Homepage:** <https://abstractmachines.fr/magistrala.html>
 
@@ -25,7 +25,7 @@ Magistrala IoT Platform
 | @bitnami | timescaledb(postgresql) | 15.2.10 |
 | @bitnami | postgresqlreader(postgresql) | 15.2.10 |
 | @bitnami | postgresqlwriter(postgresql) | 15.2.10 |
-| https://absmach.github.io/supermq-devops/ | supermq | 0.16.5 |
+| https://absmach.github.io/supermq-devops/ | supermq(Supermq) | 0.16.5 |
 
 ## Values
 
@@ -70,11 +70,11 @@ Magistrala IoT Platform
 | postgresdb.primary.resources.requests.cpu | string | `"100m"` |  |
 | postgresdb.primary.resources.requests.memory | string | `"128Mi"` |  |
 | postgresdb.reader.enabled | bool | `true` |  |
-| postgresdb.reader.http.port | int | `9011` |  |
+| postgresdb.reader.httpPort | int | `9011` |  |
 | postgresdb.reader.image | object | `{}` |  |
 | postgresdb.username | string | `"magistrala"` |  |
 | postgresdb.writer.enabled | bool | `true` |  |
-| postgresdb.writer.http.port | int | `9012` |  |
+| postgresdb.writer.httpPort | int | `9012` |  |
 | postgresdb.writer.image | object | `{}` |  |
 | postgresqlbootstrap.database | string | `"bootstrap"` |  |
 | postgresqlbootstrap.enabled | bool | `true` |  |
@@ -120,28 +120,28 @@ Magistrala IoT Platform
 | postgresqlre.sslMode | string | `"disable"` |  |
 | postgresqlre.sslRootCert | string | `""` |  |
 | postgresqlre.username | string | `"magistrala"` |  |
-| postgresqlreader.database | string | `"postgresreader"` |  |
-| postgresqlreader.enabled | bool | `true` |  |
-| postgresqlreader.global.postgresql.auth.database | string | `"postgresreader"` |  |
-| postgresqlreader.global.postgresql.auth.password | string | `"magistrala"` |  |
-| postgresqlreader.global.postgresql.auth.postgresPassword | string | `"magistrala"` |  |
-| postgresqlreader.global.postgresql.auth.username | string | `"magistrala"` |  |
-| postgresqlreader.global.postgresql.service.ports.postgresql | int | `5432` |  |
-| postgresqlreader.host | string | `"postgresql-reader"` |  |
-| postgresqlreader.name | string | `"postgresql-reader"` |  |
-| postgresqlreader.password | string | `"magistrala"` |  |
-| postgresqlreader.port | int | `5432` |  |
-| postgresqlreader.primary.persistence.enabled | bool | `true` |  |
-| postgresqlreader.primary.persistence.size | string | `"2Gi"` |  |
-| postgresqlreader.primary.resources.limits.cpu | string | `"150m"` |  |
-| postgresqlreader.primary.resources.limits.memory | string | `"192Mi"` |  |
-| postgresqlreader.primary.resources.requests.cpu | string | `"100m"` |  |
-| postgresqlreader.primary.resources.requests.memory | string | `"128Mi"` |  |
-| postgresqlreader.sslCert | string | `""` |  |
-| postgresqlreader.sslKey | string | `""` |  |
-| postgresqlreader.sslMode | string | `"disable"` |  |
-| postgresqlreader.sslRootCert | string | `""` |  |
-| postgresqlreader.username | string | `"magistrala"` |  |
+| postgresqlreaderdb.database | string | `"postgresreader"` |  |
+| postgresqlreaderdb.enabled | bool | `true` |  |
+| postgresqlreaderdb.global.postgresql.auth.database | string | `"postgresreader"` |  |
+| postgresqlreaderdb.global.postgresql.auth.password | string | `"magistrala"` |  |
+| postgresqlreaderdb.global.postgresql.auth.postgresPassword | string | `"magistrala"` |  |
+| postgresqlreaderdb.global.postgresql.auth.username | string | `"magistrala"` |  |
+| postgresqlreaderdb.global.postgresql.service.ports.postgresql | int | `5432` |  |
+| postgresqlreaderdb.host | string | `"postgresql-reader"` |  |
+| postgresqlreaderdb.name | string | `"postgresql-reader"` |  |
+| postgresqlreaderdb.password | string | `"magistrala"` |  |
+| postgresqlreaderdb.port | int | `5432` |  |
+| postgresqlreaderdb.primary.persistence.enabled | bool | `true` |  |
+| postgresqlreaderdb.primary.persistence.size | string | `"2Gi"` |  |
+| postgresqlreaderdb.primary.resources.limits.cpu | string | `"150m"` |  |
+| postgresqlreaderdb.primary.resources.limits.memory | string | `"192Mi"` |  |
+| postgresqlreaderdb.primary.resources.requests.cpu | string | `"100m"` |  |
+| postgresqlreaderdb.primary.resources.requests.memory | string | `"128Mi"` |  |
+| postgresqlreaderdb.sslCert | string | `""` |  |
+| postgresqlreaderdb.sslKey | string | `""` |  |
+| postgresqlreaderdb.sslMode | string | `"disable"` |  |
+| postgresqlreaderdb.sslRootCert | string | `""` |  |
+| postgresqlreaderdb.username | string | `"magistrala"` |  |
 | postgresreader.enabled | bool | `true` |  |
 | postgresreader.httpPort | string | `"9090"` |  |
 | postgresreader.httpServerCert | string | `""` |  |
@@ -154,37 +154,40 @@ Magistrala IoT Platform
 | postgresreader.resources.requests.cpu | string | `"100m"` |  |
 | postgresreader.resources.requests.memory | string | `"128Mi"` |  |
 | postgreswriter.configPath | string | `"/config.toml"` |  |
-| postgreswriter.database | string | `"postgreswriter"` |  |
-| postgreswriter.enabled | bool | `true` |  |
-| postgreswriter.global.postgresql.auth.database | string | `"postgreswriter"` |  |
-| postgreswriter.global.postgresql.auth.password | string | `"magistrala"` |  |
-| postgreswriter.global.postgresql.auth.postgresPassword | string | `"magistrala"` |  |
-| postgreswriter.global.postgresql.auth.username | string | `"magistrala"` |  |
-| postgreswriter.global.postgresql.service.ports.postgresql | int | `5432` |  |
-| postgreswriter.host | string | `"postgresql-writer"` |  |
 | postgreswriter.httpPort | string | `"9010"` |  |
 | postgreswriter.httpServerCert | string | `""` |  |
 | postgreswriter.httpServerKey | string | `""` |  |
 | postgreswriter.image | object | `{}` |  |
-| postgreswriter.name | string | `"postgresql-writer"` |  |
-| postgreswriter.password | string | `"magistrala"` |  |
-| postgreswriter.port | int | `5432` |  |
-| postgreswriter.primary.persistence.enabled | bool | `true` |  |
-| postgreswriter.primary.persistence.size | string | `"2Gi"` |  |
-| postgreswriter.primary.resources.limits.cpu | string | `"150m"` |  |
-| postgreswriter.primary.resources.limits.memory | string | `"192Mi"` |  |
-| postgreswriter.primary.resources.requests.cpu | string | `"100m"` |  |
-| postgreswriter.primary.resources.requests.memory | string | `"128Mi"` |  |
+| postgreswriter.jaegerTraceRatio | float | `1` |  |
+| postgreswriter.logLevel | string | `"error"` |  |
 | postgreswriter.replicaCount | int | `1` |  |
 | postgreswriter.resources.limits.cpu | string | `"200m"` |  |
 | postgreswriter.resources.limits.memory | string | `"256Mi"` |  |
 | postgreswriter.resources.requests.cpu | string | `"100m"` |  |
 | postgreswriter.resources.requests.memory | string | `"128Mi"` |  |
-| postgreswriter.sslCert | string | `""` |  |
-| postgreswriter.sslKey | string | `""` |  |
-| postgreswriter.sslMode | string | `"disable"` |  |
-| postgreswriter.sslRootCert | string | `""` |  |
-| postgreswriter.username | string | `"magistrala"` |  |
+| postgreswriter.sendTelemetry | string | `"true"` |  |
+| postgreswriterdb.database | string | `"postgreswriter"` |  |
+| postgreswriterdb.enabled | bool | `true` |  |
+| postgreswriterdb.global.postgresql.auth.database | string | `"postgreswriter"` |  |
+| postgreswriterdb.global.postgresql.auth.password | string | `"magistrala"` |  |
+| postgreswriterdb.global.postgresql.auth.postgresPassword | string | `"magistrala"` |  |
+| postgreswriterdb.global.postgresql.auth.username | string | `"magistrala"` |  |
+| postgreswriterdb.global.postgresql.service.ports.postgresql | int | `5432` |  |
+| postgreswriterdb.host | string | `"postgresql-writer"` |  |
+| postgreswriterdb.name | string | `"postgresql-writer"` |  |
+| postgreswriterdb.password | string | `"magistrala"` |  |
+| postgreswriterdb.port | int | `5432` |  |
+| postgreswriterdb.primary.persistence.enabled | bool | `true` |  |
+| postgreswriterdb.primary.persistence.size | string | `"2Gi"` |  |
+| postgreswriterdb.primary.resources.limits.cpu | string | `"150m"` |  |
+| postgreswriterdb.primary.resources.limits.memory | string | `"192Mi"` |  |
+| postgreswriterdb.primary.resources.requests.cpu | string | `"100m"` |  |
+| postgreswriterdb.primary.resources.requests.memory | string | `"128Mi"` |  |
+| postgreswriterdb.sslCert | string | `""` |  |
+| postgreswriterdb.sslKey | string | `""` |  |
+| postgreswriterdb.sslMode | string | `"disable"` |  |
+| postgreswriterdb.sslRootCert | string | `""` |  |
+| postgreswriterdb.username | string | `"magistrala"` |  |
 | provision.apiKey | string | `""` |  |
 | provision.bootstrapUrl | string | `"http://bootstrap:9013"` |  |
 | provision.bsAutoWhitelist | string | `"true"` |  |
@@ -227,6 +230,7 @@ Magistrala IoT Platform
 | re.sendTelemetry | string | `"true"` |  |
 | supermq.auth.grpcServerCACerts | string | `""` |  |
 | supermq.clients.grpcServerCACerts | string | `""` |  |
+| supermq.enabled | bool | `true` |  |
 | supermq.ingress.enabled | bool | `true` |  |
 | supermq.nginx.hostname | string | `"localhost"` |  |
 | timescaledb.database | string | `"supermq"` |  |
@@ -267,4 +271,3 @@ Magistrala IoT Platform
 | timescaledb.writer.httpServerKey | string | `""` |  |
 | timescaledb.writer.image | object | `{}` |  |
 | timescaledb.writer.instanceId | string | `""` |  |
-

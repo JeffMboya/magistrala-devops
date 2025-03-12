@@ -47,7 +47,7 @@ spec:
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.timescaledb.writer.image.pullPolicy }}
           env:
             - name: SMQ_JAEGER_URL
-              value: {{ .Values.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.jaeger.collector.service.otlp.http.port | int )) .Values.jaeger.externalUrl }}
+              value: {{ .Values.supermq.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.supermq.jaeger.collector.service.otlp.http.port | int )) .Values.supermq.jaeger.externalUrl }}
             - name: SMQ_JAEGER_TRACE_RATIO
               value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgreswriter.jaegerTraceRatio | quote }}
             - name: SMQ_SEND_TELEMETRY
@@ -93,7 +93,7 @@ spec:
             - name: MG_TIMESCALE_WRITER_INSTANCE_ID
               value: {{ .Values.timescaledb.writer.instanceId | quote }}
           ports:
-            - containerPort: {{ .Values.timescaledb.writer.http.port }}
+            - containerPort: {{ .Values.timescaledb.writer.httpPort }}
               protocol: TCP
           volumeMounts:
             - mountPath: /config/subjects.toml

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 supermq:
+  enabled: true
   ingress:
     enabled: true
     ## Uncomment this block for TLS support in public ingress
@@ -16,10 +17,10 @@ supermq:
     # tls:
     #   hostname: "stage.magistrala.abstractmachines.fr"
     #   secret: "letsencrypt-staging-certificate-secret"
-  
+
   auth:
     grpcServerCACerts: ""
-  
+
   clients:
     grpcServerCACerts: ""
 
@@ -100,7 +101,8 @@ postgresqlbootstrap:
 
 postgresreader:
   enabled: true
-  image: {}
+  image:
+    {}
     # repository: "magistrala/postgres-reader"
     # tag: "latest"
     # pullPolicy: IfNotPresent
@@ -122,7 +124,7 @@ postgresreader:
   # affinity: {}
   # tolerations: {}
 
-postgresqlreader:
+postgresqlreaderdb:
   ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
   enabled: true
   name: postgresql-reader
@@ -158,13 +160,14 @@ postgresqlreader:
       size: 2Gi
 
 postgreswriter:
-  image: {}
+  image:
+    {}
     # repository: "magistrala/postgres-writer"
     # tag: "latest"
     # pullPolicy: IfNotPresent
-  # jaegerTraceRatio: 1.0
-  # logLevel: "error"
-  # sendTelemetry: "true"
+  jaegerTraceRatio: 1.0
+  logLevel: "error"
+  sendTelemetry: "true"
   replicaCount: 1
   configPath: "/config.toml"
   httpPort: "9010"
@@ -181,7 +184,7 @@ postgreswriter:
   # affinity: {}
   # tolerations: {}
 
-postgreswriter:
+postgreswriterdb:
   ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
   enabled: true
   name: postgresql-writer
@@ -258,7 +261,8 @@ provision:
   # tolerations: {}
 
 re:
-  image: {}
+  image:
+    {}
     # repository: "ghcr.io/absmach/magistrala/re"
     # tag: "latest"
     # pullPolicy: "IfNotPresent"
@@ -411,12 +415,13 @@ postgresdb:
     # sendTelemetry: true
     # logLevel: "info"
     enabled: true
-    http: { port: 9011 }
+    httpPort: 9011
     # nodeSelector: {}
     # affinity: {}
     # tolerations: {}
   writer:
-    image: {}
+    image:
+      {}
       # pullSecrets: {}
       # repository: "magistrala/postgres-writer"
       # tag: "latest"
@@ -428,7 +433,7 @@ postgresdb:
     # affinity: {}
     # tolerations: {}
     enabled: true
-    http: { port: 9012 }
+    httpPort: 9012
   ## Configurations of Bitnami postgres
   global:
     postgresql:

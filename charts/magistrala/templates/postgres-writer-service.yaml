@@ -7,7 +7,6 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-postgres-writer
 spec:
-  type: {{ .Values.postgreswriter.service.type }}
   selector:
     app: {{ .Release.Name }}
     component: postgres-writer

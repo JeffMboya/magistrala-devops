@@ -12,13 +12,7 @@ spec:
     app: {{ .Release.Name }}
     component: timescaledb-writer
   ports:
-<<<<<<< HEAD
-    - port: {{ .Values.timescaledb.writer.http.port }}
-      protocol: TCP
-      name: {{ .Release.Name }}-timescaledb-writer-{{ .Values.timescaledb.writer.http.port }}
-=======
     - port: {{ .Values.timescaledb.writer.httpPort }}
       protocol: TCP
       name: {{ .Release.Name }}-timescaledb-writer-{{ .Values.timescaledb.writer.httpPort }}
->>>>>>> 10ea937 (initial commit)
 {{- end }}

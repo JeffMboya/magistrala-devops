@@ -43,8 +43,8 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-postgres-writer
-          image: "{{ .Values.postgreswriter.image.repository }}:{{ .Values.postgreswriter.image.tag }}"
-          imagePullPolicy: {{ .Values.postgreswriter.image.pullPolicy }}
+          image: "{{ default (printf "%s/postgres-writer" .Values.defaults.image.rootRepository) .Values.postgreswriter.image.repository }}:{{ default .Values.defaults.image.tag .Values.postgreswriter.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.postgreswriter.image.pullPolicy }}
           env:
             - name: MG_POSTGRES_WRITER_LOG_LEVEL
               value: {{ default .Values.defaults.logLevel  .Values.postgreswriter.logLevel | quote }}
@@ -59,31 +59,31 @@ spec:
             - name: MG_POSTGRES_WRITER_HTTP_SERVER_KEY
               value: {{ .Values.postgreswriter.httpServerKey | quote }}
             - name: MG_POSTGRES_HOST
-            {{- if .Values.postgreswriter.enabled }}
+            {{- if .Values.postgreswriterdb.enabled }}
               value: "{{ .Release.Name }}-postgreswriter"
             {{- else }}
-              value: {{ .Values.postgreswriter.host | quote }}
+              value: {{ .Values.postgreswriterdb.host | quote }}
             {{- end }}
             - name: MG_POSTGRES_PORT
-              value: {{ .Values.postgreswriter.port | quote  }}
+              value: {{ .Values.postgreswriterdb.port | quote  }}
             - name: MG_POSTGRES_USER
-              value: {{ .Values.postgreswriter.username | quote  }}
+              value: {{ .Values.postgreswriterdb.username | quote  }}
             - name: MG_POSTGRES_PASS
-              value: {{ .Values.postgreswriter.password | quote  }}
+              value: {{ .Values.postgreswriterdb.password | quote  }}
             - name: MG_POSTGRES_NAME
-              value: {{ .Values.postgreswriter.database | quote }}
+              value: {{ .Values.postgreswriterdb.database | quote }}
             - name: MG_POSTGRES_SSL_MODE
-              value: {{ .Values.postgreswriter.sslMode | quote }}
+              value: {{ .Values.postgreswriterdb.sslMode | quote }}
             - name: MG_POSTGRES_SSL_CERT
-              value: {{ .Values.postgreswriter.sslCert | quote }}
+              value: {{ .Values.postgreswriterdb.sslCert | quote }}
             - name: MG_POSTGRES_SSL_KEY
-              value: {{ .Values.postgreswriter.sslKey | quote }}
+              value: {{ .Values.postgreswriterdb.sslKey | quote }}
             - name: MG_POSTGRES_SSL_ROOT_CERT
-              value: {{ .Values.postgreswriter.sslRootCert | quote }}
+              value: {{ .Values.postgreswriterdb.sslRootCert | quote }}
             - name: SMQ_MESSAGE_BROKER_URL
               value: {{ .Values.supermq.nats.enabled | ternary (printf "nats://%s-nats:%d" .Release.Name (.Values.supermq.nats.config.nats.port | int )) .Values.supermq.nats.externalAddress }}
             - name: SMQ_JAEGER_URL
-              value: {{ .Values.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.jaeger.collector.service.otlp.http.port | int )) .Values.jaeger.externalUrl }}
+              value: {{ .Values.supermq.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.supermq.jaeger.collector.service.otlp.http.port | int )) .Values.supermq.jaeger.externalUrl }}
             - name: SMQ_JAEGER_TRACE_RATIO
               value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgreswriter.jaegerTraceRatio | quote }}
             - name: SMQ_SEND_TELEMETRY

@@ -58,9 +58,9 @@ spec:
               value: {{ .Values.re.httpServerKey | quote }}
             - name: MG_RE_DB_HOST
             {{- if .Values.postgresqlre.enabled }}
-            value: "{{ .Release.Name }}-re-db"
+              value: "{{ .Release.Name }}-re-db"
             {{- else }}
-            value: {{ .Values.postgresqlre.host | quote }}
+              value: {{ .Values.postgresqlre.host | quote }}
             {{- end }}
             - name: MG_RE_DB_PORT
               value: {{ .Values.postgresqlre.port | quote  }}
@@ -81,11 +81,11 @@ spec:
             - name: SMQ_MESSAGE_BROKER_URL
               value: {{ .Values.supermq.nats.enabled | ternary (printf "nats://%s-nats:%d" .Release.Name (.Values.supermq.nats.config.nats.port | int )) .Values.supermq.nats.externalAddress }}
             - name: SMQ_JAEGER_URL
-              value: {{ .Values.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.jaeger.collector.service.otlp.http.port | int )) .Values.jaeger.externalUrl }}
+              value: {{ .Values.supermq.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.supermq.jaeger.collector.service.otlp.http.port | int )) .Values.supermq.jaeger.externalUrl }}
             - name: SMQ_JAEGER_TRACE_RATIO
               value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgreswriter.jaegerTraceRatio | quote }}
             - name: SMQ_SEND_TELEMETRY
-              value: {{ default .Values.supermq.defaults.sendTelemetry Values.re.sendTelemetry | quote }}
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.re.sendTelemetry | quote }}
             - name: SMQ_AUTH_GRPC_URL
               value: {{ .Release.Name }}-envoy:{{ .Values.supermq.auth.grpcPort }}
             - name: SMQ_AUTH_GRPC_TIMEOUT

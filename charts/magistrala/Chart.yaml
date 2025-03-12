@@ -19,9 +19,11 @@ maintainers:
     email: dusan.borovcanin@abstractmachines.fr
 
 dependencies:
-  - name: supermq
+  - name: Supermq
     version: "0.16.5"
     repository: "https://absmach.github.io/supermq-devops/"
+    alias: supermq
+    condition: supermq.enabled
 
   - name: postgresql
     version: "15.2.10"
