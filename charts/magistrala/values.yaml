@@ -262,10 +262,9 @@ provision:
 
 re:
   image:
-    {}
-    # repository: "ghcr.io/absmach/magistrala/re"
-    # tag: "latest"
-    # pullPolicy: "IfNotPresent"
+    repository: "ghcr.io/absmach/magistrala/re"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
   replicaCount: 1
   sendTelemetry: "true"
   httpPort: 9008
