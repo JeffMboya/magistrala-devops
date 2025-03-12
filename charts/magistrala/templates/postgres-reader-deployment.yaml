@@ -38,7 +38,7 @@ spec:
               value: {{ .Values.postgresreader.httpServerKey | quote }}
             - name: MG_POSTGRES_HOST
             {{- if .Values.postgresqlreaderdb.enabled }}
-              value: "{{ .Release.Name }}-postgresqlreader"
+              value: "{{ .Release.Name }}-postgresqlreaderdb"
             {{- else }}
               value: {{ .Values.postgresqlreaderdb.host | quote }}
             {{- end }}

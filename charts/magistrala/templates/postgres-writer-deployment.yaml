@@ -60,7 +60,7 @@ spec:
               value: {{ .Values.postgreswriter.httpServerKey | quote }}
             - name: MG_POSTGRES_HOST
             {{- if .Values.postgreswriterdb.enabled }}
-              value: "{{ .Release.Name }}-postgreswriter"
+              value: "{{ .Release.Name }}-postgreswriterdb"
             {{- else }}
               value: {{ .Values.postgreswriterdb.host | quote }}
             {{- end }}

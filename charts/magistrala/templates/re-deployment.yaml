@@ -58,7 +58,7 @@ spec:
               value: {{ .Values.re.httpServerKey | quote }}
             - name: MG_RE_DB_HOST
             {{- if .Values.postgresqlre.enabled }}
-              value: "{{ .Release.Name }}-re-db"
+              value: "{{ .Release.Name }}-postgresqlre"
             {{- else }}
               value: {{ .Values.postgresqlre.host | quote }}
             {{- end }}
