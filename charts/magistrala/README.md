@@ -22,9 +22,10 @@ Magistrala IoT Platform
 | Repository | Name | Version |
 |------------|------|---------|
 | @bitnami | postgresqlbootstrap(postgresql) | 15.2.10 |
-| @bitnami | timescaledb(postgresql) | 15.2.10 |
 | @bitnami | postgresqlreader(postgresql) | 15.2.10 |
 | @bitnami | postgresqlwriter(postgresql) | 15.2.10 |
+| @bitnami | timescaledb(postgresql) | 15.2.10 |
+| @bitnami | postgresqlre(postgresql) | 15.2.10 |
 | https://absmach.github.io/supermq-devops/ | supermq(Supermq) | 0.16.5 |
 
 ## Values
@@ -39,6 +40,7 @@ Magistrala IoT Platform
 | bootstrap.httpServerKey | string | `""` |  |
 | bootstrap.image | object | `{}` |  |
 | bootstrap.instanceId | string | `""` |  |
+| bootstrap.jaegerTraceRatio | float | `1` |  |
 | bootstrap.replicaCount | int | `1` |  |
 | bootstrap.resources.limits.cpu | string | `"200m"` |  |
 | bootstrap.resources.limits.memory | string | `"256Mi"` |  |
@@ -98,9 +100,9 @@ Magistrala IoT Platform
 | postgresqlbootstrap.sslMode | string | `"disable"` |  |
 | postgresqlbootstrap.sslRootCert | string | `""` |  |
 | postgresqlbootstrap.username | string | `"magistrala"` |  |
-| postgresqlre.database | string | `"magistrala"` |  |
+| postgresqlre.database | string | `"rules_engine"` |  |
 | postgresqlre.enabled | bool | `true` |  |
-| postgresqlre.global.postgresql.auth.database | string | `"magistrala"` |  |
+| postgresqlre.global.postgresql.auth.database | string | `"rules_engine"` |  |
 | postgresqlre.global.postgresql.auth.password | string | `"magistrala"` |  |
 | postgresqlre.global.postgresql.auth.postgresPassword | string | `"magistrala"` |  |
 | postgresqlre.global.postgresql.auth.username | string | `"magistrala"` |  |
@@ -219,8 +221,11 @@ Magistrala IoT Platform
 | re.httpPort | int | `9008` |  |
 | re.httpServerCert | string | `""` |  |
 | re.httpServerKey | string | `""` |  |
-| re.image | object | `{}` |  |
+| re.image.pullPolicy | string | `"IfNotPresent"` |  |
+| re.image.repository | string | `"ghcr.io/absmach/magistrala/re"` |  |
+| re.image.tag | string | `"latest"` |  |
 | re.instanceId | string | `""` |  |
+| re.jaegerTraceRatio | float | `1` |  |
 | re.logLevel | string | `"error"` |  |
 | re.replicaCount | int | `1` |  |
 | re.resources.limits.cpu | string | `"200m"` |  |

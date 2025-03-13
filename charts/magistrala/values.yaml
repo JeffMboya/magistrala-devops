@@ -43,9 +43,9 @@ bootstrap:
   #   repository: "magistrala/bootstrap"
   #   tag: "latest"
   #   pullPolicy: "IfNotPresent"
-  # jaegerTraceRatio: 1.0
   # sendTelemetry: true
   # logLevel: "error"
+  jaegerTraceRatio: 1.0
   replicaCount: 1
   httpPort: 9013
   encKey: "v7aT0HGxJxt2gULzr3RHwf4WIf6DusPp"
@@ -268,6 +268,7 @@ re:
     repository: "ghcr.io/absmach/magistrala/re"
     tag: "latest"
     pullPolicy: "IfNotPresent"
+  jaegerTraceRatio: 1.0
   replicaCount: 1
   sendTelemetry: "true"
   httpPort: 9008
@@ -292,7 +293,7 @@ postgresqlre:
   name: postgresql-re
   host: postgresql-re
   port: &postgresqlRePort 5432
-  database: &postgresqlReDatabase magistrala
+  database: &postgresqlReDatabase rules_engine
   username: &postgresqlReUsername magistrala
   password: &postgresqlRePassword magistrala
   sslMode: "disable"
