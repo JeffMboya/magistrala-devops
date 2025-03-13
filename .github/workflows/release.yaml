@@ -1,6 +1,3 @@
-# Copyright (c) Abstract Machines
-# SPDX-License-Identifier: Apache-2.0
-
 name: Release Charts
 
 on:
@@ -45,6 +42,16 @@ jobs:
       - name: Update Helm dependencies
         run: |
           helm dependency update charts/magistrala
+
+      - name: Debug CR_TOKEN
+        run: |
+          if [ -z "$CR_TOKEN" ]; then
+            echo "CR_TOKEN is empty"
+          else
+            echo "CR_TOKEN is set"
+          fi
+        env:
+          CR_TOKEN: "${{ secrets.HELM_RELEASE_TOKEN }}"
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
