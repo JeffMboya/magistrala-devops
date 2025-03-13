@@ -107,9 +107,9 @@ spec:
             - name: SMQ_DOMAINS_GRPC_SERVER_CA_CERTS
               value: {{ .Values.supermq.domains.grpcServerCACerts | quote }}
             - name: SMQ_CLIENTS_URL
-              value: {{ .Release.Name }}-envoy:{{ .Values.supermq.clients.httpPort }}
+              value: {{ .Release.Name }}-clients:{{ .Values.supermq.clients.httpPort }}
             - name: SMQ_CHANNELS_URL
-              value: {{ .Release.Name }}-envoy:{{ .Values.supermq.channels.httpPort }}
+              value: {{ .Release.Name }}-channels:{{ .Values.supermq.channels.httpPort }}
           ports:
             - containerPort: {{ .Values.bootstrap.httpPort }}
               protocol: TCP
