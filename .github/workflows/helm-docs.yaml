@@ -5,8 +5,8 @@ name: Generate Helm Docs
 
 on:
   push:
-    tags:
-      - "magistrala-*"
+    branches:
+      - main
 
 jobs:
   generate-docs:
