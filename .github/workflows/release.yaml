@@ -2,14 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 name: "Publish charts to repo"
+
 on:
   push:
-    branches:
-      - main
     tags:
-      - "chart-*"
-    paths:
-      - "charts/**"
+      - "magistrala-*"
 
 jobs:
   publish:
