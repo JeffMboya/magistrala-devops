@@ -13,7 +13,7 @@ supermq:
     #   cert-manager.io/issuer: "letsencrypt-staging"
 
     ## Uncomment this block for TLS support in public ingress
-    # hostname: "magistrala-stage.ddns.net"
+    hostname: "161.35.244.205"
     # tls:
     #   hostname: "stage.magistrala.abstractmachines.fr"
     #   secret: "letsencrypt-staging-certificate-secret"
@@ -25,7 +25,7 @@ supermq:
     grpcServerCACerts: ""
 
   nginx:
-    hostname: "localhost"
+    hostname: "161.35.244.205"
 
 defaults:
   image:
