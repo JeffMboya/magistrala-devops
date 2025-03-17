@@ -110,7 +110,7 @@ postgresreader:
   # sendTelemetry: "true"
   # logLevel: "error"
   replicaCount: 1
-  httpPort: "9090"
+  httpPort: "9009"
   httpServerCert: ""
   httpServerKey: ""
   instanceId: ""
@@ -131,7 +131,7 @@ postgresqlreader:
   name: postgresql-reader
   host: postgresql-reader
   port: &postgresqlBootstrapPort 5432
-  database: &postgresqlBootstrapDatabase postgresreader
+  database: &postgresqlBootstrapDatabase messages
   username: &postgresqlBootstrapUsername magistrala
   password: &postgresqlBootstrapPassword magistrala
   sslMode: "disable"
@@ -191,7 +191,7 @@ postgresqlwriter:
   name: postgresql-writer
   host: postgresql-writer
   port: &postgresqlBootstrapPort 5432
-  database: &postgresqlBootstrapDatabase postgreswriter
+  database: &postgresqlBootstrapDatabase messages
   username: &postgresqlBootstrapUsername magistrala
   password: &postgresqlBootstrapPassword magistrala
   sslMode: "disable"
