@@ -206,8 +206,8 @@ Magistrala IoT Platform
 | supermq.clients.grpcServerCACerts | string | `""` |  |
 | supermq.enabled | bool | `true` |  |
 | supermq.ingress.enabled | bool | `true` |  |
-| supermq.ingress.hostname | string | `"161.35.244.205"` |  |
-| supermq.nginx.hostname | string | `"161.35.244.205"` |  |
+| supermq.ingress.hostname | string | `"localhost"` |  |
+| supermq.nginx.hostname | string | `"localhost"` |  |
 | timescaledb.database | string | `"supermq"` |  |
 | timescaledb.enabled | bool | `true` |  |
 | timescaledb.global.postgresql.auth.database | string | `"supermq"` |  |
