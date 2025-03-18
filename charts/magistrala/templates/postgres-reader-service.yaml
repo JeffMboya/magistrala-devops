@@ -1,7 +1,7 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.postgresreader.enabled }}
+{{- if .Values.postgresdb.reader.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,6 +12,6 @@ spec:
     component: postgres-reader
   ports:
     - protocol: TCP
-      port: {{ .Values.postgresreader.httpPort | int }}
-      name: {{ .Release.Name }}-postgresreader-{{ .Values.postgresreader.httpPort }}
+      port: {{ .Values.postgresdb.reader.httpPort | int }}
+      name: {{ .Release.Name }}-postgresreader-{{ .Values.postgresdb.reader.httpPort }}
 {{- end }}

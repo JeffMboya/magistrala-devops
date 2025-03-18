@@ -1,7 +1,7 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.postgreswriter.enabled }}
+{{- if .Values.postgresdb.writer.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,6 +12,6 @@ spec:
     component: postgres-writer
   ports:
     - protocol: TCP
-      port: {{ .Values.postgreswriter.httpPort | int }}
-      name: {{ .Release.Name }}-postgreswriter-{{ .Values.postgreswriter.httpPort }}
+      port: {{ .Values.postgresdb.writer.httpPort | int }}
+      name: {{ .Release.Name }}-postgreswriter-{{ .Values.postgresdb.writer.httpPort }}
 {{- end }}

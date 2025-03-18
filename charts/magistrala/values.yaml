@@ -125,41 +125,6 @@ postgresreader:
   # affinity: {}
   # tolerations: {}
 
-postgresqlreader:
-  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
-  enabled: true
-  name: postgresql-reader
-  host: postgresql-reader
-  port: &postgresqlBootstrapPort 5432
-  database: &postgresqlBootstrapDatabase messages
-  username: &postgresqlBootstrapUsername magistrala
-  password: &postgresqlBootstrapPassword magistrala
-  sslMode: "disable"
-  sslCert: ""
-  sslKey: ""
-  sslRootCert: ""
-  global:
-    postgresql:
-      auth:
-        postgresPassword: *postgresqlBootstrapPassword
-        username: *postgresqlBootstrapUsername
-        password: *postgresqlBootstrapPassword
-        database: *postgresqlBootstrapDatabase
-      service:
-        ports:
-          postgresql: *postgresqlBootstrapPort
-  primary:
-    resources:
-      requests:
-        cpu: "100m"
-        memory: "128Mi"
-      limits:
-        cpu: "150m"
-        memory: "192Mi"
-    persistence:
-      enabled: true
-      size: 2Gi
-
 postgreswriter:
   image:
     {}
@@ -185,29 +150,65 @@ postgreswriter:
   # affinity: {}
   # tolerations: {}
 
-postgresqlwriter:
-  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+postgresdb:
+  # If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
   enabled: true
-  name: postgresql-writer
-  host: postgresql-writer
-  port: &postgresqlBootstrapPort 5432
-  database: &postgresqlBootstrapDatabase messages
-  username: &postgresqlBootstrapUsername magistrala
-  password: &postgresqlBootstrapPassword magistrala
+  name: postgresrw
+  host: postgresrw
+  port: &messagesRwPostgresPort 5432
+  database: &messagesRwPostgresDatabase messages
+  username: &messagesRwPostgresUsername magistrala
+  password: &messagesRwPostgresPassword magistrala
   sslMode: "disable"
   sslCert: ""
   sslKey: ""
   sslRootCert: ""
+  reader:
+    image:
+      {}
+      # pullSecrets: {}
+      # repository: "magistrala/postgres-reader"
+      # tag: "latest"
+      # pullPolicy: "IfNotPresent"
+    # jaegerTraceRatio: 1.0
+    sendTelemetry: true
+    logLevel: "error"
+    enabled: true
+    httpPort: 9011
+    httpServerCert: ""
+    httpServerKey: ""
+    instanceId: ""
+    # Optionally add: nodeSelector, affinity, tolerations, resources, etc.
+    # nodeSelector: {}
+    # affinity: {}
+    # tolerations: {}
+  writer:
+    image:
+      {}
+      # pullSecrets: {}
+      # repository: "magistrala/postgres-reader"
+      # tag: "latest"
+      # pullPolicy: "IfNotPresent"
+    # jaegerTraceRatio: 1.0
+    enabled: true
+    httpPort: 9012
+    httpServerCert: ""
+    httpServerKey: ""
+    instanceId: ""
+    # Optionally add: nodeSelector, affinity, tolerations, resources, etc.
+    # nodeSelector: {}
+    # affinity: {}
+    # tolerations: {}
   global:
     postgresql:
       auth:
-        postgresPassword: *postgresqlBootstrapPassword
-        username: *postgresqlBootstrapUsername
-        password: *postgresqlBootstrapPassword
-        database: *postgresqlBootstrapDatabase
+        postgresPassword: *messagesRwPostgresPassword
+        username: *messagesRwPostgresUsername
+        password: *messagesRwPostgresPassword
+        database: *messagesRwPostgresDatabase
       service:
         ports:
-          postgresql: *postgresqlBootstrapPort
+          postgresql: *messagesRwPostgresPort
   primary:
     resources:
       requests:
@@ -219,9 +220,10 @@ postgresqlwriter:
     persistence:
       enabled: true
       size: 2Gi
-  # nodeSelector: {}
-  # affinity: {}
-  # tolerations: {}
+  image:
+    registry: docker.io
+    repository: postgres/postgresdb
+    tag: latest-pg12
 
 provision:
   enabled: true
@@ -403,70 +405,4 @@ timescaledb:
   image:
     registry: docker.io
     repository: timescale/timescaledb
-    tag: latest-pg12
-
-postgresdb:
-  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
-  enabled: true
-  name: postgresrw
-  host: postgresrw
-  port: &messagesRwPostgresPort 5432
-  database: &messagesRwPostgresDatabase messages
-  username: &messagesRwPostgresUsername magistrala
-  password: &messagesRwPostgresPassword magistrala
-  reader:
-    image:
-      {}
-      # pullSecrets: {}
-      # repository: "magistrala/postgres-reader"
-      # tag: "latest"
-      # pullPolicy: "IfNotPresent"
-    # jaegerTraceRatio: 1.0
-    # sendTelemetry: true
-    # logLevel: "info"
-    enabled: true
-    httpPort: 9011
-    # nodeSelector: {}
-    # affinity: {}
-    # tolerations: {}
-  writer:
-    image:
-      {}
-      # pullSecrets: {}
-      # repository: "magistrala/postgres-writer"
-      # tag: "latest"
-      # pullPolicy: "IfNotPresent"
-    # jaegerTraceRatio: 1.0
-    # sendTelemetry: true
-    # logLevel: "info"
-    # nodeSelector: {}
-    # affinity: {}
-    # tolerations: {}
-    enabled: true
-    httpPort: 9012
-  ## Configurations of Bitnami postgres
-  global:
-    postgresql:
-      auth:
-        postgresPassword: *messagesRwPostgresPassword
-        username: *messagesRwPostgresUsername
-        password: *messagesRwPostgresPassword
-        database: *messagesRwPostgresDatabase
-      service:
-        ports:
-          postgresql: *messagesRwPostgresPort
-  primary:
-    resources:
-      requests:
-        cpu: "100m"
-        memory: "128Mi"
-      limits:
-        cpu: "150m"
-        memory: "192Mi"
-  persistence:
-    enabled: true
-    size: 2Gi
-  image:
-    registry: docker.io
-    repository: postgres/postgresdb
     tag: latest-pg12

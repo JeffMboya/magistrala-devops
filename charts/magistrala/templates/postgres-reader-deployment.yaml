@@ -2,6 +2,7 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
 
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -10,7 +11,7 @@ metadata:
     app: postgres-reader
     release: {{ .Release.Name }}
 spec:
-  replicas: {{ default .Values.defaults.replicaCount .Values.postgresreader.replicaCount }}
+  replicas: {{ default .Values.defaults.replicaCount .Values.postgresdb.reader.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}
@@ -23,41 +24,37 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-postgres-reader
-          image: "{{ default (printf "%s/postgres-reader" .Values.defaults.image.rootRepository) .Values.postgresreader.image.repository }}:{{ default .Values.defaults.image.tag .Values.postgresreader.image.tag }}"
-          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy  .Values.postgresreader.image.pullPolicy }}
+          image: "{{ default (printf "%s/postgres-reader" .Values.defaults.image.rootRepository) .Values.postgresdb.reader.image.repository | default "postgres-reader" }}:{{ default .Values.defaults.image.tag .Values.postgresdb.reader.image.tag | default .Values.defaults.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.postgresdb.reader.image.pullPolicy }}
           env:
             - name: MG_POSTGRES_READER_LOG_LEVEL
-              value: {{ default .Values.defaults.logLevel  .Values.postgresreader.logLevel | quote }}
+              value: {{ default .Values.defaults.logLevel .Values.postgresdb.reader.logLevel | quote }}
             - name: MG_POSTGRES_READER_HTTP_HOST
               value: "0.0.0.0"
             - name: MG_POSTGRES_READER_HTTP_PORT
-              value: {{ .Values.postgresreader.httpPort | quote }}
+              value: {{ .Values.postgresdb.reader.httpPort | quote }}
             - name: MG_POSTGRES_READER_HTTP_SERVER_CERT
-              value: {{ .Values.postgresreader.httpServerCert | quote }}
+              value: {{ .Values.postgresdb.reader.httpServerCert | quote }}
             - name: MG_POSTGRES_READER_HTTP_SERVER_KEY
-              value: {{ .Values.postgresreader.httpServerKey | quote }}
+              value: {{ .Values.postgresdb.reader.httpServerKey | quote }}
             - name: MG_POSTGRES_HOST
-            {{- if .Values.postgresqlreader.enabled }}
-              value: "{{ .Release.Name }}-postgresqlreader"
-            {{- else }}
-              value: {{ .Values.postgresqlreader.host | quote }}
-            {{- end }}
+              value: {{ .Values.postgresdb.host | quote }}
             - name: MG_POSTGRES_PORT
-              value: {{ .Values.postgresqlreader.port | quote  }}
+              value: {{ .Values.postgresdb.port | quote }}
             - name: MG_POSTGRES_USER
-              value: {{ .Values.postgresqlreader.username | quote  }}
+              value: {{ .Values.postgresdb.username | quote }}
             - name: MG_POSTGRES_PASS
-              value: {{ .Values.postgresqlreader.password | quote  }}
+              value: {{ .Values.postgresdb.password | quote }}
             - name: MG_POSTGRES_NAME
-              value: {{ .Values.postgresqlreader.database | quote }}
+              value: {{ .Values.postgresdb.database | quote }}
             - name: MG_POSTGRES_SSL_MODE
-              value: {{ .Values.postgresqlreader.sslMode | quote }}
+              value: {{ .Values.postgresdb.sslMode | quote }}
             - name: MG_POSTGRES_SSL_CERT
-              value: {{ .Values.postgresqlreader.sslCert | quote }}
+              value: {{ .Values.postgresdb.sslCert | quote }}
             - name: MG_POSTGRES_SSL_KEY
-              value: {{ .Values.postgresqlreader.sslKey | quote }}
+              value: {{ .Values.postgresdb.sslKey | quote }}
             - name: MG_POSTGRES_SSL_ROOT_CERT
-              value: {{ .Values.postgresqlreader.sslRootCert | quote }}
+              value: {{ .Values.postgresdb.sslRootCert | quote }}
             - name: SMQ_CLIENTS_GRPC_URL
               value: {{ .Release.Name }}-envoy:{{ .Values.supermq.clients.authGrpcPort }}
             - name: SMQ_CLIENTS_GRPC_TIMEOUT
@@ -79,18 +76,18 @@ spec:
             - name: SMQ_AUTH_GRPC_SERVER_CA_CERTS
               value: {{ .Values.supermq.auth.grpcServerCACerts | quote }}
             - name: MG_SEND_TELEMETRY
-              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgresreader.sendTelemetry | quote }}
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgresdb.reader.sendTelemetry | quote }}
             - name: MG_POSTGRES_READER_INSTANCE_ID
-              value: {{ .Values.postgresreader.instanceId | quote }}
+              value: {{ .Values.postgresdb.reader.instanceId | quote }}
           ports:
-            - containerPort: {{ .Values.postgresreader.httpPort | int }}
+            - containerPort: {{ .Values.postgresdb.reader.httpPort | int }}
               protocol: TCP
           resources:
-            {{- toYaml .Values.postgresreader.resources | nindent 12 }}
+            {{- toYaml .Values.postgresdb.reader.resources | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.postgresreader.httpPort }}
+              port: {{ .Values.postgresdb.reader.httpPort }}
               scheme: HTTP
             initialDelaySeconds: 90
             periodSeconds: 10
@@ -100,22 +97,22 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.postgresreader.httpPort }}
+              port: {{ .Values.postgresdb.reader.httpPort }}
               scheme: HTTP
             initialDelaySeconds: 90
             periodSeconds: 10
             failureThreshold: 3
             successThreshold: 1
             timeoutSeconds: 5
-      {{- with .Values.postgresreader.nodeSelector }}
+      {{- with .Values.postgresdb.reader.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresreader.affinity }}
+      {{- with .Values.postgresdb.reader.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresreader.tolerations }}
+      {{- with .Values.postgresdb.reader.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
