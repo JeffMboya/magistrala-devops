@@ -2,7 +2,7 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.timescaledb.reader.enabled }}
+{{- if .Values.timescalereader.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,7 +12,7 @@ spec:
     app: {{ .Release.Name }}
     component: timescaledb-reader
   ports:
-    - port: {{ .Values.timescaledb.reader.httpPort }}
+    - port: {{ .Values.timescalereader.httpPort }}
       protocol: TCP
-      name: {{ .Release.Name }}-timescaledb-reader-{{ .Values.timescaledb.reader.httpPort }}
+      name: {{ .Release.Name }}-timescaledb-reader-{{ .Values.timescalereader.httpPort }}
 {{- end }}

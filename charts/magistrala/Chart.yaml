@@ -34,14 +34,8 @@ dependencies:
   - name: postgresql
     version: "15.2.10"
     repository: "@bitnami"
-    alias: postgresqlreader
-    condition: postgresqlreader.enabled
-
-  - name: postgresql
-    version: "15.2.10"
-    repository: "@bitnami"
-    alias: postgresqlwriter
-    condition: postgresqlwriter.enabled
+    alias: postgresdb
+    condition: postgresdb.enabled
 
   - name: postgresql
     version: "15.2.10"

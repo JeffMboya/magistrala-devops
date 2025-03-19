@@ -2,7 +2,7 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.timescaledb.reader.enabled }}
+{{- if .Values.timescalereader.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -19,7 +19,7 @@ spec:
         app: {{ .Release.Name }}
         component: timescaledb-reader
     spec:
-      {{- with (default .Values.defaults.image.pullSecrets .Values.timescaledb.reader.image.pullSecrets) }}
+      {{- with (default .Values.defaults.image.pullSecrets .Values.timescalereader.image.pullSecrets) }}
       imagePullSecrets:
         {{- toYaml . | nindent 12 }}
       {{- end }}
@@ -27,21 +27,21 @@ spec:
       restartPolicy: Always
       containers:
         - name: {{ .Release.Name }}-timescaledb-reader
-          image: "{{ default (printf "%s/timescale-reader" .Values.defaults.image.rootRepository) .Values.timescaledb.reader.image.repository }}:{{ default .Values.defaults.image.tag .Values.timescaledb.reader.image.tag }}"
-          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.timescaledb.reader.image.pullPolicy }}
+          image: "{{ default (printf "%s/timescale-reader" .Values.defaults.image.rootRepository) .Values.timescalereader.image.repository }}:{{ default .Values.defaults.image.tag .Values.timescalereader.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.timescalereader.image.pullPolicy }}
           env:
             - name: SMQ_SEND_TELEMETRY
-              value: {{ default .Values.defaults.sendTelemetry .Values.timescaledb.reader.sendTelemetry | quote  }}
+              value: {{ default .Values.defaults.sendTelemetry .Values.timescalereader.sendTelemetry | quote  }}
             - name: MG_TIMESCALE_READER_LOG_LEVEL
-              value: {{ default .Values.defaults.logLevel .Values.timescaledb.reader.logLevel  | quote }}
+              value: {{ default .Values.defaults.logLevel .Values.timescalereader.logLevel  | quote }}
             - name: MG_TIMESCALE_READER_HTTP_HOST
               value: "0.0.0.0"
             - name: MG_TIMESCALE_READER_HTTP_PORT
-              value: {{ .Values.timescaledb.reader.httpPort | quote }}
+              value: {{ .Values.timescalereader.httpPort | quote }}
             - name: MG_TIMESCALE_READER_HTTP_SERVER_CERT
-              value: {{ .Values.timescaledb.reader.httpServerCert | quote }}
+              value: {{ .Values.timescalereader.httpServerCert | quote }}
             - name: MG_TIMESCALE_READER_HTTP_SERVER_KEY
-              value: {{ .Values.timescaledb.reader.httpServerKey | quote }}
+              value: {{ .Values.timescalereader.httpServerKey | quote }}
             - name: SMQ_AUTH_GRPC_URL
               value: {{ .Release.Name }}-envoy:{{ .Values.supermq.auth.grpcPort }}
             - name: SMQ_CLIENTS_GRPC_URL
@@ -95,19 +95,19 @@ spec:
             - name: MG_TIMESCALE_SSL_ROOT_CERT
               value: {{ .Values.timescaledb.sslRootCert | quote }}
             - name: MG_TIMESCALE_READER_INSTANCE_ID
-              value: {{ .Values.timescaledb.reader.instanceId | quote }}
+              value: {{ .Values.timescalereader.instanceId | quote }}
           ports:
-            - containerPort: {{ .Values.timescaledb.reader.httpPort }}
+            - containerPort: {{ .Values.timescalereader.httpPort }}
               protocol: TCP
-      {{- with .Values.timescaledb.reader.nodeSelector }}
+      {{- with .Values.timescalereader.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.timescaledb.reader.affinity }}
+      {{- with .Values.timescalereader.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.timescaledb.reader.tolerations }}
+      {{- with .Values.timescalereader.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

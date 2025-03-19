@@ -131,8 +131,8 @@ postgreswriter:
     # repository: "magistrala/postgres-writer"
     # tag: "latest"
     # pullPolicy: IfNotPresent
+  # logLevel: "error"
   jaegerTraceRatio: 1.0
-  logLevel: "error"
   sendTelemetry: "true"
   replicaCount: 1
   configPath: "/config.toml"
@@ -163,42 +163,6 @@ postgresdb:
   sslCert: ""
   sslKey: ""
   sslRootCert: ""
-  reader:
-    image:
-      {}
-      # pullSecrets: {}
-      # repository: "magistrala/postgres-reader"
-      # tag: "latest"
-      # pullPolicy: "IfNotPresent"
-    # jaegerTraceRatio: 1.0
-    sendTelemetry: true
-    logLevel: "error"
-    enabled: true
-    httpPort: 9011
-    httpServerCert: ""
-    httpServerKey: ""
-    instanceId: ""
-    # Optionally add: nodeSelector, affinity, tolerations, resources, etc.
-    # nodeSelector: {}
-    # affinity: {}
-    # tolerations: {}
-  writer:
-    image:
-      {}
-      # pullSecrets: {}
-      # repository: "magistrala/postgres-reader"
-      # tag: "latest"
-      # pullPolicy: "IfNotPresent"
-    # jaegerTraceRatio: 1.0
-    enabled: true
-    httpPort: 9012
-    httpServerCert: ""
-    httpServerKey: ""
-    instanceId: ""
-    # Optionally add: nodeSelector, affinity, tolerations, resources, etc.
-    # nodeSelector: {}
-    # affinity: {}
-    # tolerations: {}
   global:
     postgresql:
       auth:
@@ -234,8 +198,8 @@ provision:
     # tag: "latest"
     # pullPolicy: "IfNotPresent"
   # sendTelemetry: "true"
+  # logLevel: "error"
   replicaCount: 1
-  logLevel: "error"
   httpPort: 9016
   configFile: "/configs/config.toml"
   envClientsTLS: "false"
@@ -271,11 +235,11 @@ re:
     repository: "ghcr.io/absmach/magistrala/re"
     tag: "latest"
     pullPolicy: "IfNotPresent"
-  jaegerTraceRatio: 1.0
+  # jaegerTraceRatio: 1.0
+  # logLevel: "error"
+  # sendTelemetry: "true"
   replicaCount: 1
-  sendTelemetry: "true"
   httpPort: 9008
-  logLevel: "error"
   httpServerCert: ""
   httpServerKey: ""
   grpcTimeout: "300s"
@@ -325,6 +289,59 @@ postgresqlre:
       enabled: true
       size: 2Gi
 
+timescalereader:
+  image:
+    {}
+    # pullSecrets: {}
+    # repository: "magistrala/timescale-reader"
+    # tag: "latest"
+    # pullPolicy: "IfNotPresent"
+  # jaegerTraceRatio: 1.0
+  # sendTelemetry: true
+  # logLevel: "error"
+  enabled: true
+  httpPort: 9011
+  httpServerCert: ""
+  httpServerKey: ""
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+timescalewriter:
+  writer:
+  image:
+    {}
+    # pullSecrets: {}
+    # repository: "magistrala/timescale-writer"
+    # tag: "latest"
+    # pullPolicy: "IfNotPresent"
+  # jaegerTraceRatio: 1.0
+  # sendTelemetry: true
+  # logLevel: "error"
+  enabled: true
+  httpPort: 9012
+  httpServerCert: ""
+  httpServerKey: ""
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
 timescaledb:
   ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
   enabled: true
@@ -338,42 +355,6 @@ timescaledb:
   sslCert: ""
   sslKey: ""
   sslRootCert: ""
-  reader:
-    image:
-      {}
-      # pullSecrets: {}
-      # repository: "magistrala/timescale-reader"
-      # tag: "latest"
-      # pullPolicy: "IfNotPresent"
-    # jaegerTraceRatio: 1.0
-    sendTelemetry: true
-    logLevel: "error"
-    enabled: true
-    httpPort: 9011
-    httpServerCert: ""
-    httpServerKey: ""
-    instanceId: ""
-    # nodeSelector: {}
-    # affinity: {}
-    # tolerations: {}
-  writer:
-    image:
-      {}
-      # pullSecrets: {}
-      # repository: "magistrala/timescale-writer"
-      # tag: "latest"
-      # pullPolicy: "IfNotPresent"
-    # jaegerTraceRatio: 1.0
-    # sendTelemetry: true
-    # logLevel: "info"
-    # nodeSelector: {}
-    # affinity: {}
-    # tolerations: {}
-    enabled: true
-    httpPort: 9012
-    httpServerCert: ""
-    httpServerKey: ""
-    instanceId: ""
   ## Configurations of Bitnami postgres
   global:
     postgresql:

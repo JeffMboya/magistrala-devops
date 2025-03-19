@@ -59,7 +59,11 @@ spec:
             - name: MG_POSTGRES_WRITER_HTTP_SERVER_KEY
               value: {{ .Values.postgresdb.writer.httpServerKey | quote }}
             - name: MG_POSTGRES_HOST
+            {{- if .Values.postgresdb.enabled }}
+              value: "{{ .Release.Name }}-postgresdb"
+            {{- else }}
               value: {{ .Values.postgresdb.host | quote }}
+            {{- end }}
             - name: MG_POSTGRES_PORT
               value: {{ .Values.postgresdb.port | quote }}
             - name: MG_POSTGRES_USER

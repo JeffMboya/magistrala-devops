@@ -2,7 +2,7 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.timescaledb.writer.enabled }}
+{{- if .Values.timescalewriter.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -29,7 +29,7 @@ spec:
         app: {{ .Release.Name }}
         component: timescaledb-writer
     spec:
-      {{- with (default .Values.defaults.image.pullSecrets .Values.timescaledb.writer.image.pullSecrets) }}
+      {{- with (default .Values.defaults.image.pullSecrets .Values.timescalewriter.image.pullSecrets) }}
       imagePullSecrets:
         {{- toYaml . | nindent 12 }}
       {{- end }}
@@ -43,25 +43,25 @@ spec:
           name: timescaledb-writer-config
       containers:
         - name: {{ .Release.Name }}-timescaledb-writer
-          image: "{{ default (printf "%s/timescale-writer" .Values.defaults.image.rootRepository) .Values.timescaledb.writer.image.repository }}:{{ default .Values.defaults.image.tag .Values.timescaledb.writer.image.tag }}"
-          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.timescaledb.writer.image.pullPolicy }}
+          image: "{{ default (printf "%s/timescale-writer" .Values.defaults.image.rootRepository) .Values.timescalewriter.image.repository }}:{{ default .Values.defaults.image.tag .Values.timescalewriter.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.timescalewriter.image.pullPolicy }}
           env:
             - name: SMQ_JAEGER_URL
               value: {{ .Values.supermq.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.supermq.jaeger.collector.service.otlp.http.port | int )) .Values.supermq.jaeger.externalUrl }}
             - name: SMQ_JAEGER_TRACE_RATIO
               value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgreswriter.jaegerTraceRatio | quote }}
             - name: SMQ_SEND_TELEMETRY
-              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.timescaledb.writer.sendTelemetry | quote  }}
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.timescalewriter.sendTelemetry | quote  }}
             - name: MG_TIMESCALE_WRITER_LOG_LEVEL
-              value: {{ default .Values.supermq.defaults.logLevel .Values.timescaledb.writer.logLevel  | quote }}
+              value: {{ default .Values.supermq.defaults.logLevel .Values.timescalewriter.logLevel  | quote }}
             - name: MG_TIMESCALE_WRITER_HTTP_HOST
               value: "0.0.0.0"
             - name: MG_TIMESCALE_WRITER_HTTP_PORT
-              value: {{ .Values.timescaledb.writer.httpPort | quote }}
+              value: {{ .Values.timescalewriter.httpPort | quote }}
             - name: MG_TIMESCALE_WRITER_HTTP_SERVER_CERT
-              value: {{ .Values.timescaledb.writer.httpServerCert | quote }}
+              value: {{ .Values.timescalewriter.httpServerCert | quote }}
             - name: MG_TIMESCALE_WRITER_HTTP_SERVER_KEY
-              value: {{ .Values.timescaledb.writer.httpServerKey | quote }}
+              value: {{ .Values.timescalewriter.httpServerKey | quote }}
             - name: MG_TIMESCALE_WRITER_CONFIG_PATH
               value: "/config/subjects.toml"
             - name: MG_TIMESCALE_HOST
@@ -89,23 +89,23 @@ spec:
             - name: SMQ_MESSAGE_BROKER_URL
               value: {{ .Values.supermq.nats.enabled | ternary (printf "nats://%s-nats:%d" .Release.Name (.Values.supermq.nats.config.nats.port | int )) .Values.supermq.nats.externalAddress }}
             - name: MG_TIMESCALE_WRITER_INSTANCE_ID
-              value: {{ .Values.timescaledb.writer.instanceId | quote }}
+              value: {{ .Values.timescalewriter.instanceId | quote }}
           ports:
-            - containerPort: {{ .Values.timescaledb.writer.httpPort }}
+            - containerPort: {{ .Values.timescalewriter.httpPort }}
               protocol: TCP
           volumeMounts:
             - mountPath: /config/subjects.toml
               name: timescaledb-writer-config
               subPath: subjects.toml
-      {{- with .Values.timescaledb.writer.nodeSelector }}
+      {{- with .Values.timescalewriter.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.timescaledb.writer.affinity }}
+      {{- with .Values.timescalewriter.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.timescaledb.writer.tolerations }}
+      {{- with .Values.timescalewriter.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -22,8 +22,7 @@ Magistrala IoT Platform
 | Repository | Name | Version |
 |------------|------|---------|
 | @bitnami | postgresqlbootstrap(postgresql) | 15.2.10 |
-| @bitnami | postgresqlreader(postgresql) | 15.2.10 |
-| @bitnami | postgresqlwriter(postgresql) | 15.2.10 |
+| @bitnami | postgresdb(postgresql) | 15.2.10 |
 | @bitnami | timescaledb(postgresql) | 15.2.10 |
 | @bitnami | postgresqlre(postgresql) | 15.2.10 |
 | https://absmach.github.io/supermq-devops/ | supermq(Supermq) | 0.16.5 |
@@ -72,25 +71,11 @@ Magistrala IoT Platform
 | postgresdb.primary.resources.limits.memory | string | `"192Mi"` |  |
 | postgresdb.primary.resources.requests.cpu | string | `"100m"` |  |
 | postgresdb.primary.resources.requests.memory | string | `"128Mi"` |  |
-| postgresdb.reader.enabled | bool | `true` |  |
-| postgresdb.reader.httpPort | int | `9011` |  |
-| postgresdb.reader.httpServerCert | string | `""` |  |
-| postgresdb.reader.httpServerKey | string | `""` |  |
-| postgresdb.reader.image | object | `{}` |  |
-| postgresdb.reader.instanceId | string | `""` |  |
-| postgresdb.reader.logLevel | string | `"error"` |  |
-| postgresdb.reader.sendTelemetry | bool | `true` |  |
 | postgresdb.sslCert | string | `""` |  |
 | postgresdb.sslKey | string | `""` |  |
 | postgresdb.sslMode | string | `"disable"` |  |
 | postgresdb.sslRootCert | string | `""` |  |
 | postgresdb.username | string | `"magistrala"` |  |
-| postgresdb.writer.enabled | bool | `true` |  |
-| postgresdb.writer.httpPort | int | `9012` |  |
-| postgresdb.writer.httpServerCert | string | `""` |  |
-| postgresdb.writer.httpServerKey | string | `""` |  |
-| postgresdb.writer.image | object | `{}` |  |
-| postgresdb.writer.instanceId | string | `""` |  |
 | postgresqlbootstrap.database | string | `"bootstrap"` |  |
 | postgresqlbootstrap.enabled | bool | `true` |  |
 | postgresqlbootstrap.global.postgresql.auth.database | string | `"bootstrap"` |  |
@@ -152,7 +137,6 @@ Magistrala IoT Platform
 | postgreswriter.httpServerKey | string | `""` |  |
 | postgreswriter.image | object | `{}` |  |
 | postgreswriter.jaegerTraceRatio | float | `1` |  |
-| postgreswriter.logLevel | string | `"error"` |  |
 | postgreswriter.replicaCount | int | `1` |  |
 | postgreswriter.resources.limits.cpu | string | `"200m"` |  |
 | postgreswriter.resources.limits.memory | string | `"256Mi"` |  |
@@ -173,7 +157,6 @@ Magistrala IoT Platform
 | provision.httpPort | int | `9016` |  |
 | provision.image | object | `{}` |  |
 | provision.instanceId | string | `""` |  |
-| provision.logLevel | string | `"error"` |  |
 | provision.password | string | `""` |  |
 | provision.replicaCount | int | `1` |  |
 | provision.resources.limits.cpu | string | `"200m"` |  |
@@ -194,14 +177,11 @@ Magistrala IoT Platform
 | re.image.repository | string | `"ghcr.io/absmach/magistrala/re"` |  |
 | re.image.tag | string | `"latest"` |  |
 | re.instanceId | string | `""` |  |
-| re.jaegerTraceRatio | float | `1` |  |
-| re.logLevel | string | `"error"` |  |
 | re.replicaCount | int | `1` |  |
 | re.resources.limits.cpu | string | `"200m"` |  |
 | re.resources.limits.memory | string | `"256Mi"` |  |
 | re.resources.requests.cpu | string | `"100m"` |  |
 | re.resources.requests.memory | string | `"128Mi"` |  |
-| re.sendTelemetry | string | `"true"` |  |
 | supermq.auth.grpcServerCACerts | string | `""` |  |
 | supermq.clients.grpcServerCACerts | string | `""` |  |
 | supermq.enabled | bool | `true` |  |
@@ -232,22 +212,29 @@ Magistrala IoT Platform
 | timescaledb.primary.resources.limits.memory | string | `"192Mi"` |  |
 | timescaledb.primary.resources.requests.cpu | string | `"100m"` |  |
 | timescaledb.primary.resources.requests.memory | string | `"128Mi"` |  |
-| timescaledb.reader.enabled | bool | `true` |  |
-| timescaledb.reader.httpPort | int | `9011` |  |
-| timescaledb.reader.httpServerCert | string | `""` |  |
-| timescaledb.reader.httpServerKey | string | `""` |  |
-| timescaledb.reader.image | object | `{}` |  |
-| timescaledb.reader.instanceId | string | `""` |  |
-| timescaledb.reader.logLevel | string | `"error"` |  |
-| timescaledb.reader.sendTelemetry | bool | `true` |  |
 | timescaledb.sslCert | string | `""` |  |
 | timescaledb.sslKey | string | `""` |  |
 | timescaledb.sslMode | string | `""` |  |
 | timescaledb.sslRootCert | string | `""` |  |
 | timescaledb.username | string | `"supermq"` |  |
-| timescaledb.writer.enabled | bool | `true` |  |
-| timescaledb.writer.httpPort | int | `9012` |  |
-| timescaledb.writer.httpServerCert | string | `""` |  |
-| timescaledb.writer.httpServerKey | string | `""` |  |
-| timescaledb.writer.image | object | `{}` |  |
-| timescaledb.writer.instanceId | string | `""` |  |
+| timescalereader.enabled | bool | `true` |  |
+| timescalereader.httpPort | int | `9011` |  |
+| timescalereader.httpServerCert | string | `""` |  |
+| timescalereader.httpServerKey | string | `""` |  |
+| timescalereader.image | object | `{}` |  |
+| timescalereader.instanceId | string | `""` |  |
+| timescalereader.resources.limits.cpu | string | `"200m"` |  |
+| timescalereader.resources.limits.memory | string | `"256Mi"` |  |
+| timescalereader.resources.requests.cpu | string | `"100m"` |  |
+| timescalereader.resources.requests.memory | string | `"128Mi"` |  |
+| timescalewriter.enabled | bool | `true` |  |
+| timescalewriter.httpPort | int | `9012` |  |
+| timescalewriter.httpServerCert | string | `""` |  |
+| timescalewriter.httpServerKey | string | `""` |  |
+| timescalewriter.image | object | `{}` |  |
+| timescalewriter.instanceId | string | `""` |  |
+| timescalewriter.resources.limits.cpu | string | `"200m"` |  |
+| timescalewriter.resources.limits.memory | string | `"256Mi"` |  |
+| timescalewriter.resources.requests.cpu | string | `"100m"` |  |
+| timescalewriter.resources.requests.memory | string | `"128Mi"` |  |
+| timescalewriter.writer | string | `nil` |  |
