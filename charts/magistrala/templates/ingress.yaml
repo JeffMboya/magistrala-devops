@@ -1,13 +1,18 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
-
+---
 {{- if .Values.supermq.ingress.enabled }}
+{{- $readerconfig := include "readerconfig" . | fromJson }}
+{{- $writerconfig := include "writerconfig" . | fromJson }}
 
+---
+{{- if .Values.bootstrap.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-nginx-ingress-bootstrap
   annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1/$2"
 {{- if and .Values.supermq.ingress.annotations (not (empty .Values.supermq.ingress.annotations)) }}
 {{ toYaml .Values.supermq.ingress.annotations | indent 4 }}
 {{- end }}
@@ -20,8 +25,15 @@ spec:
   rules:
     - http:
         paths:
-          - path: /bootstrap
-            pathType: Prefix
+          - path: "/api/([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})/(clients/(config|state)/?.*)"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}-bootstrap
+                port:
+                  number: {{ .Values.bootstrap.httpPort }}
+          - path: "/api/(clients)/(bootstrap/?.*)"
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: {{ .Release.Name }}-bootstrap
@@ -34,8 +46,83 @@ spec:
       secretName: {{ .Values.supermq.ingress.tls.secret }}
 {{- end }}
 
+{{- end }}
 ---
+{{- if .Values.provision.enabled }}
 
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-nginx-ingress-provision
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1/$2"
+{{- if and .Values.supermq.ingress.annotations (not (empty .Values.supermq.ingress.annotations)) }}
+{{ toYaml .Values.supermq.ingress.annotations | indent 4 }}
+{{- end }}
+  labels:
+{{- if and .Values.supermq.ingress.labels (not (empty .Values.supermq.ingress.labels)) }}
+{{ toYaml .Values.supermq.ingress.labels | indent 4 }}
+{{- end }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: "/api/([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})/(mapping/?)"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}-provision
+                port:
+                  number: {{ .Values.provision.httpPort }}
+{{- if and .Values.supermq.ingress.tls .Values.supermq.ingress.tls.secret }}
+  tls:
+    - hosts:
+        - {{ .Values.supermq.ingress.hostname }}
+      secretName: {{ .Values.supermq.ingress.tls.secret }}
+{{- end }}
+
+{{- end }}
+
+---
+{{- if .Values.re.enabled }}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-nginx-ingress-re
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1/$2"
+{{- if and .Values.supermq.ingress.annotations (not (empty .Values.supermq.ingress.annotations)) }}
+{{ toYaml .Values.supermq.ingress.annotations | indent 4 }}
+{{- end }}
+  labels:
+{{- if and .Values.supermq.ingress.labels (not (empty .Values.supermq.ingress.labels)) }}
+{{ toYaml .Values.supermq.ingress.labels | indent 4 }}
+{{- end }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: "/api/([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})/(rules/?.*)"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}-re
+                port:
+                  number: {{ .Values.re.httpPort }}
+{{- if and .Values.supermq.ingress.tls .Values.supermq.ingress.tls.secret }}
+  tls:
+    - hosts:
+        - {{ .Values.supermq.ingress.hostname }}
+      secretName: {{ .Values.supermq.ingress.tls.secret }}
+{{- end }}
+
+{{- end }}
+
+---
+{{- if $readerconfig.ingress }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -57,18 +144,19 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ .Release.Name }}-postgresreader
+                name: {{ $readerconfig.host }}
                 port:
-                  number: {{ .Values.postgresreader.httpPort }}
+                  number: {{ $readerconfig.port }}
 {{- if and .Values.supermq.ingress.tls .Values.supermq.ingress.tls.secret }}
   tls:
     - hosts:
         - {{ .Values.supermq.ingress.hostname }}
       secretName: {{ .Values.supermq.ingress.tls.secret }}
 {{- end }}
+{{- end }}
 
 ---
-
+{{- if $writerconfig.ingress }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -91,14 +179,15 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ .Release.Name }}-postgreswriter
+                name: {{ $writerconfig.host }}
                 port:
-                  number: {{ .Values.postgreswriter.httpPort }}
+                  number: {{ $writerconfig.port }}
 {{- if and .Values.supermq.ingress.tls .Values.supermq.ingress.tls.secret }}
   tls:
     - hosts:
         - {{ .Values.supermq.ingress.hostname }}
       secretName: {{ .Values.supermq.ingress.tls.secret }}
+{{- end }}
 {{- end }}
 
 {{- end }}

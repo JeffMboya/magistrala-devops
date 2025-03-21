@@ -1,8 +1,7 @@
----
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
-
 ---
+{{- if .Values.postgresreader.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -11,7 +10,7 @@ metadata:
     app: postgres-reader
     release: {{ .Release.Name }}
 spec:
-  replicas: {{ default .Values.defaults.replicaCount .Values.postgresdb.reader.replicaCount | default 1 }}
+  replicas: {{ default .Values.defaults.replicaCount .Values.postgresreader.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}
@@ -24,41 +23,67 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-postgres-reader
-          image: "{{ default (printf "%s/postgres-reader" .Values.defaults.image.rootRepository) .Values.postgresdb.reader.image.repository | default "postgres-reader" }}:{{ default .Values.defaults.image.tag .Values.postgresdb.reader.image.tag | default .Values.defaults.image.tag }}"
-          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.postgresdb.reader.image.pullPolicy }}
+          image: "{{ default (printf "%s/postgres-reader" .Values.defaults.image.rootRepository) .Values.postgresreader.image.repository | default "postgres-reader" }}:{{ default .Values.defaults.image.tag .Values.postgresreader.image.tag | default .Values.defaults.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.postgresreader.image.pullPolicy }}
           env:
             - name: MG_POSTGRES_READER_LOG_LEVEL
-              value: {{ default .Values.defaults.logLevel .Values.postgresdb.reader.logLevel | quote }}
+              value: {{ default .Values.defaults.logLevel .Values.postgresreader.logLevel | quote }}
             - name: MG_POSTGRES_READER_HTTP_HOST
               value: "0.0.0.0"
             - name: MG_POSTGRES_READER_HTTP_PORT
-              value: {{ .Values.postgresdb.reader.httpPort | quote }}
+              value: {{ .Values.postgresreader.httpPort | quote }}
             - name: MG_POSTGRES_READER_HTTP_SERVER_CERT
-              value: {{ .Values.postgresdb.reader.httpServerCert | quote }}
+              value: {{ .Values.postgresreader.httpServerCert | quote }}
             - name: MG_POSTGRES_READER_HTTP_SERVER_KEY
-              value: {{ .Values.postgresdb.reader.httpServerKey | quote }}
+              value: {{ .Values.postgresreader.httpServerKey | quote }}
             - name: MG_POSTGRES_HOST
-            {{- if .Values.postgresdb.enabled }}
-              value: "{{ .Release.Name }}-postgresdb"
-            {{- else }}
-              value: {{ .Values.postgresdb.host | quote }}
-            {{- end }}
+              value: {{ if and .Values.postgresreader.externaldb.host (not .Values.postgresdbrw.enabled) }}
+                        {{- .Values.postgresreader.externaldb.host | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- printf "%s-postgresdbrw" .Release.Name  }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgresreader.externaldb.host must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_PORT
-              value: {{ .Values.postgresdb.port | quote }}
+              value: {{ if and .Values.postgresreader.externaldb.port (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgresreader.externaldb.port | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.service.ports.postgresql | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgresreader.externaldb.port must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_USER
-              value: {{ .Values.postgresdb.username | quote }}
+              value: {{ if and .Values.postgresreader.externaldb.username (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgresreader.externaldb.username | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.auth.username | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgresreader.externaldb.username must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_PASS
-              value: {{ .Values.postgresdb.password | quote }}
+              value: {{ if and .Values.postgresreader.externaldb.password (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgresreader.externaldb.password | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.auth.password | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgresreader.externaldb.password must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_NAME
-              value: {{ .Values.postgresdb.database | quote }}
+              value: {{ if and .Values.postgresreader.externaldb.database (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgresreader.externaldb.database | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.auth.database | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgresreader.externaldb.database must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_SSL_MODE
-              value: {{ .Values.postgresdb.sslMode | quote }}
+              value: {{ .Values.postgresreader.externaldb.sslMode | default "" | quote }}
             - name: MG_POSTGRES_SSL_CERT
-              value: {{ .Values.postgresdb.sslCert | quote }}
+              value: {{ .Values.postgresreader.externaldb.sslCert | default "" | quote }}
             - name: MG_POSTGRES_SSL_KEY
-              value: {{ .Values.postgresdb.sslKey | quote }}
+              value: {{ .Values.postgresreader.externaldb.sslKey | default "" | quote }}
             - name: MG_POSTGRES_SSL_ROOT_CERT
-              value: {{ .Values.postgresdb.sslRootCert | quote }}
+              value: {{ .Values.postgresreader.externaldb.sslRootCert | default "" | quote }}
             - name: SMQ_CLIENTS_GRPC_URL
               value: {{ .Release.Name }}-envoy:{{ .Values.supermq.clients.authGrpcPort }}
             - name: SMQ_CLIENTS_GRPC_TIMEOUT
@@ -80,18 +105,18 @@ spec:
             - name: SMQ_AUTH_GRPC_SERVER_CA_CERTS
               value: {{ .Values.supermq.auth.grpcServerCACerts | quote }}
             - name: MG_SEND_TELEMETRY
-              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgresdb.reader.sendTelemetry | quote }}
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgresreader.sendTelemetry | quote }}
             - name: MG_POSTGRES_READER_INSTANCE_ID
-              value: {{ .Values.postgresdb.reader.instanceId | quote }}
+              value: {{ .Values.postgresreader.instanceId | quote }}
           ports:
-            - containerPort: {{ .Values.postgresdb.reader.httpPort | int }}
+            - containerPort: {{ .Values.postgresreader.httpPort | int }}
               protocol: TCP
           resources:
-            {{- toYaml .Values.postgresdb.reader.resources | nindent 12 }}
+            {{- toYaml .Values.postgresreader.resources | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.postgresdb.reader.httpPort }}
+              port: {{ .Values.postgresreader.httpPort }}
               scheme: HTTP
             initialDelaySeconds: 90
             periodSeconds: 10
@@ -101,22 +126,23 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.postgresdb.reader.httpPort }}
+              port: {{ .Values.postgresreader.httpPort }}
               scheme: HTTP
             initialDelaySeconds: 90
             periodSeconds: 10
             failureThreshold: 3
             successThreshold: 1
             timeoutSeconds: 5
-      {{- with .Values.postgresdb.reader.nodeSelector }}
+      {{- with .Values.postgresreader.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresdb.reader.affinity }}
+      {{- with .Values.postgresreader.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresdb.reader.tolerations }}
+      {{- with .Values.postgresreader.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

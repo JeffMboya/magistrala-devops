@@ -17,7 +17,10 @@ supermq:
     # tls:
     #   hostname: "stage.magistrala.abstractmachines.fr"
     #   secret: "letsencrypt-staging-certificate-secret"
-
+  ui:
+    type: "mg"
+    image:
+      repository: "ghcr.io/absmach/magistrala/ui-mg"
   auth:
     grpcServerCACerts: ""
 
@@ -30,7 +33,7 @@ supermq:
 defaults:
   image:
     pullPolicy: "IfNotPresent"
-    rootRepository: "magistrala"
+    rootRepository: "ghcr.io/absmach/magistrala"
     tag: "latest"
     # pullSecrets: {}
   logLevel: "error"
@@ -41,7 +44,7 @@ bootstrap:
   enabled: true
   image: {}
   #   pullSecrets: {}
-  #   repository: "magistrala/bootstrap"
+  #   repository: "ghcr.io/absmach/magistrala/bootstrap"
   #   tag: "latest"
   #   pullPolicy: "IfNotPresent"
   # sendTelemetry: true
@@ -100,141 +103,12 @@ postgresqlbootstrap:
       enabled: true
       size: 2Gi
 
-postgresreader:
+re:
   enabled: true
-  image:
-    {}
-    # repository: "magistrala/postgres-reader"
-    # tag: "latest"
-    # pullPolicy: IfNotPresent
-  # sendTelemetry: "true"
-  # logLevel: "error"
-  replicaCount: 1
-  httpPort: "9009"
-  httpServerCert: ""
-  httpServerKey: ""
-  instanceId: ""
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "200m"
-      memory: "256Mi"
-  # nodeSelector: {}
-  # affinity: {}
-  # tolerations: {}
-
-postgreswriter:
-  image:
-    {}
-    # repository: "magistrala/postgres-writer"
-    # tag: "latest"
-    # pullPolicy: IfNotPresent
-  # logLevel: "error"
-  jaegerTraceRatio: 1.0
-  sendTelemetry: "true"
-  replicaCount: 1
-  configPath: "/config.toml"
-  httpPort: "9010"
-  httpServerCert: ""
-  httpServerKey: ""
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "200m"
-      memory: "256Mi"
-  # nodeSelector: {}
-  # affinity: {}
-  # tolerations: {}
-
-postgresdb:
-  # If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
-  enabled: true
-  name: postgresrw
-  host: postgresrw
-  port: &messagesRwPostgresPort 5432
-  database: &messagesRwPostgresDatabase messages
-  username: &messagesRwPostgresUsername magistrala
-  password: &messagesRwPostgresPassword magistrala
-  sslMode: "disable"
-  sslCert: ""
-  sslKey: ""
-  sslRootCert: ""
-  global:
-    postgresql:
-      auth:
-        postgresPassword: *messagesRwPostgresPassword
-        username: *messagesRwPostgresUsername
-        password: *messagesRwPostgresPassword
-        database: *messagesRwPostgresDatabase
-      service:
-        ports:
-          postgresql: *messagesRwPostgresPort
-  primary:
-    resources:
-      requests:
-        cpu: "100m"
-        memory: "128Mi"
-      limits:
-        cpu: "150m"
-        memory: "192Mi"
-    persistence:
-      enabled: true
-      size: 2Gi
-  image:
-    registry: docker.io
-    repository: postgres/postgresdb
-    tag: latest-pg12
-
-provision:
-  enabled: true
-  image:
-    {}
-    # pullSecrets: {}
-    # repository: "supermq/provision"
+  image: {}
+    # repository: "ghcr.io/absmach/magistrala/re"
     # tag: "latest"
     # pullPolicy: "IfNotPresent"
-  # sendTelemetry: "true"
-  # logLevel: "error"
-  replicaCount: 1
-  httpPort: 9016
-  configFile: "/configs/config.toml"
-  envClientsTLS: "false"
-  serverCert: ""
-  serverKey: ""
-  user: ""
-  username: ""
-  password: ""
-  apiKey: ""
-  usersUrl: "http://users:9002"
-  clientsUrl: "http://clients:9006"
-  certsUrl: "http://certs:9019"
-  bootstrapUrl: "http://bootstrap:9013"
-  bsConfigProvisioning: "true"
-  bsAutoWhitelist: "true"
-  bsContent: ""
-  x509Provisioning: "false"
-  certsHoursValid: "2400h"
-  instanceId: ""
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "200m"
-      memory: "256Mi"
-  # nodeSelector: {}
-  # affinity: {}
-  # tolerations: {}
-
-re:
-  image:
-    repository: "ghcr.io/absmach/magistrala/re"
-    tag: "latest"
-    pullPolicy: "IfNotPresent"
   # jaegerTraceRatio: 1.0
   # logLevel: "error"
   # sendTelemetry: "true"
@@ -289,17 +163,164 @@ postgresqlre:
       enabled: true
       size: 2Gi
 
-timescalereader:
+provision:
+  enabled: true
   image:
     {}
     # pullSecrets: {}
-    # repository: "magistrala/timescale-reader"
+    # repository: "ghcr.io/absmach/magistrala/provision"
+    # tag: "latest"
+    # pullPolicy: "IfNotPresent"
+  # sendTelemetry: "true"
+  # logLevel: "error"
+  replicaCount: 1
+  httpPort: 9016
+  configFile: "/configs/config.toml"
+  envClientsTLS: "false"
+  serverCert: ""
+  serverKey: ""
+  user: ""
+  username: ""
+  password: ""
+  apiKey: ""
+  usersUrl: "http://users:9002"
+  clientsUrl: "http://clients:9006"
+  certsUrl: "http://certs:9019"
+  bootstrapUrl: "http://bootstrap:9013"
+  bsConfigProvisioning: "true"
+  bsAutoWhitelist: "true"
+  bsContent: ""
+  x509Provisioning: "false"
+  certsHoursValid: "2400h"
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+postgresreader:
+  enabled: false
+  image: {}
+    # repository: "ghcr.io/absmach/magistrala/postgres-reader"
+    # tag: "latest"
+    # pullPolicy: IfNotPresent
+  # sendTelemetry: "true"
+  # logLevel: "error"
+  externaldb:
+    {}
+  #   host: postgresdbrw
+  #   port: 5432
+  #   database: supermq
+  #   username: supermq
+  #   password: supermq
+  #   sslMode: ""
+  #   sslCert: ""
+  #   sslKey: ""
+  #   sslRootCert: ""
+  replicaCount: 1
+  httpPort: "9009"
+  httpServerCert: ""
+  httpServerKey: ""
+  instanceId: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+postgreswriter:
+  enabled: false
+  image: {}
+    # repository: "ghcr.io/absmach/magistrala/postgres-writer"
+    # tag: "latest"
+    # pullPolicy: IfNotPresent
+  # logLevel: "error"
+  externaldb:
+    {}
+  #   host: postgresdbrw
+  #   port: 5432
+  #   database: supermq
+  #   username: supermq
+  #   password: supermq
+  #   sslMode: ""
+  #   sslCert: ""
+  #   sslKey: ""
+  #   sslRootCert: ""
+  jaegerTraceRatio: 1.0
+  sendTelemetry: "true"
+  replicaCount: 1
+  configPath: "/config.toml"
+  httpPort: "9010"
+  httpServerCert: ""
+  httpServerKey: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  # nodeSelector: {}
+  # affinity: {}
+  # tolerations: {}
+
+postgresdbrw:
+  # If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+  enabled: false
+  global:
+    postgresql:
+      auth:
+        postgresPassword: supermq
+        username: supermq
+        password: supermq
+        database: messages
+      service:
+        ports:
+          postgresql: 5432
+  primary:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "150m"
+        memory: "192Mi"
+    persistence:
+      enabled: true
+      size: 2Gi
+
+timescalereader:
+  enabled: true
+  image: {}
+    # pullSecrets: {}
+    # repository: "ghcr.io/absmach/magistrala/timescale-reader"
     # tag: "latest"
     # pullPolicy: "IfNotPresent"
   # jaegerTraceRatio: 1.0
   # sendTelemetry: true
   # logLevel: "error"
-  enabled: true
+  externaldb:
+    {}
+  #   host: timescaledbrw
+  #   port: 5432
+  #   database: supermq
+  #   username: supermq
+  #   password: supermq
+  #   sslMode: ""
+  #   sslCert: ""
+  #   sslKey: ""
+  #   sslRootCert: ""
   httpPort: 9011
   httpServerCert: ""
   httpServerKey: ""
@@ -316,17 +337,26 @@ timescalereader:
   # tolerations: {}
 
 timescalewriter:
-  writer:
-  image:
-    {}
+  enabled: true
+  image: {}
     # pullSecrets: {}
-    # repository: "magistrala/timescale-writer"
+    # repository: "ghcr.io/absmach/magistrala/timescale-writer"
     # tag: "latest"
     # pullPolicy: "IfNotPresent"
   # jaegerTraceRatio: 1.0
   # sendTelemetry: true
   # logLevel: "error"
-  enabled: true
+  externaldb:
+    {}
+  #   host: timescaledbrw
+  #   port: 5432
+  #   database: supermq
+  #   username: supermq
+  #   password: supermq
+  #   sslMode: ""
+  #   sslCert: ""
+  #   sslKey: ""
+  #   sslRootCert: ""
   httpPort: 9012
   httpServerCert: ""
   httpServerKey: ""
@@ -342,30 +372,20 @@ timescalewriter:
   # affinity: {}
   # tolerations: {}
 
-timescaledb:
-  ## If you want to use an external database, set this to false and change host & port to external postgresql server host & port respectively
+timescaledbrw:
+  ## If you want to use an external database, set this to false and set value for externaldb in both timescalewriter and timescalereader.
   enabled: true
-  name: timescalerw
-  host: timescalerw
-  port: &messagesRwTimescalePort 5432
-  database: &messagesRwTimescaleDatabase supermq
-  username: &messagesRwTimescaleUsername supermq
-  password: &messagesRwTimescalePassword supermq
-  sslMode: ""
-  sslCert: ""
-  sslKey: ""
-  sslRootCert: ""
   ## Configurations of Bitnami postgres
   global:
     postgresql:
       auth:
-        postgresPassword: *messagesRwTimescalePassword
-        username: *messagesRwTimescaleUsername
-        password: *messagesRwTimescalePassword
-        database: *messagesRwTimescaleDatabase
+        postgresPassword: supermq
+        username: supermq
+        password: supermq
+        database: &timescaledbrwDatabase messages
       service:
         ports:
-          postgresql: *messagesRwTimescalePort
+          postgresql: 5432
   primary:
     resources:
       requests:
@@ -374,6 +394,12 @@ timescaledb:
       limits:
         cpu: "150m"
         memory: "192Mi"
+
+    extraEnvVars:
+      - name: TIMESCALEDB_TELEMETRY
+        value: "off"
+      - name: POSTGRES_DB
+        value: *timescaledbrwDatabase
     persistence:
       enabled: true
       size: 2Gi
@@ -386,4 +412,5 @@ timescaledb:
   image:
     registry: docker.io
     repository: timescale/timescaledb
-    tag: latest-pg12
+    tag: latest-pg16
+    debug: true

@@ -1,8 +1,7 @@
----
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
-
 ---
+{{- if .Values.postgreswriter.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -30,7 +29,7 @@ metadata:
     app: postgres-writer
     release: {{ .Release.Name }}
 spec:
-  replicas: {{ default .Values.defaults.replicaCount .Values.postgresdb.writer.replicaCount | default 1 }}
+  replicas: {{ default .Values.defaults.replicaCount .Values.postgreswriter.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}
@@ -43,60 +42,86 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-postgres-writer
-          image: "{{ default (printf "%s/postgres-writer" .Values.defaults.image.rootRepository) .Values.postgresdb.writer.image.repository | default "postgres-writer" }}:{{ default .Values.defaults.image.tag .Values.postgresdb.writer.image.tag | default .Values.defaults.image.tag }}"
-          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.postgresdb.writer.image.pullPolicy }}
+          image: "{{ default (printf "%s/postgres-writer" .Values.defaults.image.rootRepository) .Values.postgreswriter.image.repository | default "postgres-writer" }}:{{ default .Values.defaults.image.tag .Values.postgreswriter.image.tag | default .Values.defaults.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.postgreswriter.image.pullPolicy }}
           env:
             - name: MG_POSTGRES_WRITER_LOG_LEVEL
-              value: {{ default .Values.defaults.logLevel .Values.postgresdb.writer.logLevel | quote }}
+              value: {{ default .Values.defaults.logLevel .Values.postgreswriter.logLevel | quote }}
             - name: MG_POSTGRES_WRITER_CONFIG_PATH
-              value: {{ .Values.postgresdb.writer.configPath | quote }}
+              value: {{ .Values.postgreswriter.configPath | quote }}
             - name: MG_POSTGRES_WRITER_HTTP_HOST
               value: "0.0.0.0"
             - name: MG_POSTGRES_WRITER_HTTP_PORT
-              value: {{ .Values.postgresdb.writer.httpPort | quote }}
+              value: {{ .Values.postgreswriter.httpPort | quote }}
             - name: MG_POSTGRES_WRITER_HTTP_SERVER_CERT
-              value: {{ .Values.postgresdb.writer.httpServerCert | quote }}
+              value: {{ .Values.postgreswriter.httpServerCert | quote }}
             - name: MG_POSTGRES_WRITER_HTTP_SERVER_KEY
-              value: {{ .Values.postgresdb.writer.httpServerKey | quote }}
+              value: {{ .Values.postgreswriter.httpServerKey | quote }}
             - name: MG_POSTGRES_HOST
-            {{- if .Values.postgresdb.enabled }}
-              value: "{{ .Release.Name }}-postgresdb"
-            {{- else }}
-              value: {{ .Values.postgresdb.host | quote }}
-            {{- end }}
+              value: {{ if and .Values.postgreswriter.externaldb.host (not .Values.postgresdbrw.enabled) }}
+                        {{- .Values.postgreswriter.externaldb.host | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- printf "%s-postgresdbrw" .Release.Name }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgreswriter.externaldb.host must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_PORT
-              value: {{ .Values.postgresdb.port | quote }}
+              value: {{ if and .Values.postgreswriter.externaldb.port (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgreswriter.externaldb.port | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.service.ports.postgresql | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgreswriter.externaldb.port must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_USER
-              value: {{ .Values.postgresdb.username | quote }}
+              value: {{ if and .Values.postgreswriter.externaldb.username (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgreswriter.externaldb.username | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.auth.username | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgreswriter.externaldb.username must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_PASS
-              value: {{ .Values.postgresdb.password | quote }}
+              value: {{ if and .Values.postgreswriter.externaldb.password (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgreswriter.externaldb.password | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.auth.password | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgreswriter.externaldb.password must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_NAME
-              value: {{ .Values.postgresdb.database | quote }}
+              value: {{ if and .Values.postgreswriter.externaldb.database (not .Values.postgresdbrw.enabled) }}
+                          {{- .Values.postgreswriter.externaldb.database | quote }}
+                      {{- else if .Values.postgresdbrw.enabled }}
+                          {{- .Values.postgresdbrw.global.postgresql.auth.database | quote }}
+                      {{- else }}
+                          {{- fail "either postgresdbrw must be enabled or .Values.postgreswriter.externaldb.database must be provided"  }}
+                      {{- end }}
             - name: MG_POSTGRES_SSL_MODE
-              value: {{ .Values.postgresdb.sslMode | quote }}
+              value: {{ .Values.postgreswriter.externaldb.sslMode | default "" | quote }}
             - name: MG_POSTGRES_SSL_CERT
-              value: {{ .Values.postgresdb.sslCert | quote }}
+              value: {{ .Values.postgreswriter.externaldb.sslCert | default "" | quote }}
             - name: MG_POSTGRES_SSL_KEY
-              value: {{ .Values.postgresdb.sslKey | quote }}
+              value: {{ .Values.postgreswriter.externaldb.sslKey | default "" | quote }}
             - name: MG_POSTGRES_SSL_ROOT_CERT
-              value: {{ .Values.postgresdb.sslRootCert | quote }}
+              value: {{ .Values.postgreswriter.externaldb.sslRootCert | default "" | quote }}
             - name: SMQ_MESSAGE_BROKER_URL
               value: {{ .Values.supermq.nats.enabled | ternary (printf "nats://%s-nats:%d" .Release.Name (.Values.supermq.nats.config.nats.port | int )) .Values.supermq.nats.externalAddress }}
             - name: SMQ_JAEGER_URL
               value: {{ .Values.supermq.jaeger.enabled | ternary (printf "http://%s-jaeger-collector:%d/v1/traces" .Release.Name (.Values.supermq.jaeger.collector.service.otlp.http.port | int )) .Values.supermq.jaeger.externalUrl }}
             - name: SMQ_JAEGER_TRACE_RATIO
-              value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgresdb.writer.jaegerTraceRatio | quote }}
+              value: {{ default .Values.supermq.defaults.jaegerTraceRatio .Values.postgreswriter.jaegerTraceRatio | quote }}
             - name: SMQ_SEND_TELEMETRY
-              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgresdb.writer.sendTelemetry | quote }}
+              value: {{ default .Values.supermq.defaults.sendTelemetry .Values.postgreswriter.sendTelemetry | quote }}
           ports:
-            - containerPort: {{ .Values.postgresdb.writer.httpPort | int }}
+            - containerPort: {{ .Values.postgreswriter.httpPort | int }}
               protocol: TCP
           resources:
             {{- toYaml .Values.bootstrap.resources | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.postgresdb.writer.httpPort }}
+              port: {{ .Values.postgreswriter.httpPort }}
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 10
@@ -105,7 +130,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: {{ .Values.postgresdb.writer.httpPort }}
+              port: {{ .Values.postgreswriter.httpPort }}
               scheme: HTTP
             initialDelaySeconds: 30
             periodSeconds: 10
@@ -119,15 +144,16 @@ spec:
         - name: config
           configMap:
             name: {{ .Release.Name }}-postgres-writer-config
-      {{- with .Values.postgresdb.writer.nodeSelector }}
+      {{- with .Values.postgreswriter.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresdb.writer.affinity }}
+      {{- with .Values.postgreswriter.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.postgresdb.writer.tolerations }}
+      {{- with .Values.postgreswriter.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

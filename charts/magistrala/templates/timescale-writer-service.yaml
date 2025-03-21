@@ -12,7 +12,7 @@ spec:
     app: {{ .Release.Name }}
     component: timescaledb-writer
   ports:
-    - port: {{ .Values.timescalewriter.httpPort }}
+    - port: {{ .Values.timescalewriter.httpPort | int }}
       protocol: TCP
       name: {{ .Release.Name }}-timescaledb-writer-{{ .Values.timescalewriter.httpPort }}
 {{- end }}

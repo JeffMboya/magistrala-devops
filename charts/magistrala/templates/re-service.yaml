@@ -12,7 +12,7 @@ spec:
     app: {{ .Release.Name }}
     component: re
   ports:
-    - port: {{ .Values.re.httpPort }}
+    - port: {{ .Values.re.httpPort | int }}
       protocol: TCP
       name: {{ .Release.Name }}-re-{{ .Values.re.httpPort }}
 {{- end }}

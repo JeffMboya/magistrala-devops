@@ -65,27 +65,53 @@ spec:
             - name: MG_TIMESCALE_WRITER_CONFIG_PATH
               value: "/config/subjects.toml"
             - name: MG_TIMESCALE_HOST
-            {{- if .Values.timescaledb.enabled }}
-              value: "{{ .Release.Name }}-timescaledb"
-            {{- else }}
-              value: {{ .Values.timescaledb.host | quote }}
-            {{- end }}
+              value: {{ if and .Values.timescalewriter.externaldb.host (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalewriter.externaldb.host | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- printf "%s-timescaledbrw" .Release.Name }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalewriter.externaldb.host must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_PORT
-              value: {{ .Values.timescaledb.port | quote }}
+              value: {{ if and .Values.timescalewriter.externaldb.port (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalewriter.externaldb.port | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.service.ports.postgresql | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalewriter.externaldb.port must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_USER
-              value: {{ .Values.timescaledb.username | quote  }}
+              value: {{ if and .Values.timescalewriter.externaldb.username (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalewriter.externaldb.username | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.auth.username | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalewriter.externaldb.username must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_PASS
-              value: {{ .Values.timescaledb.password | quote  }}
+              value: {{ if and .Values.timescalewriter.externaldb.password (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalewriter.externaldb.password | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.auth.password | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalewriter.externaldb.password must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_NAME
-              value: {{ .Values.timescaledb.database | quote  }}
+              value: {{ if and .Values.timescalewriter.externaldb.database (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalewriter.externaldb.database | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.auth.database | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalewriter.externaldb.database must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_SSL_MODE
-              value: {{ .Values.timescaledb.sslMode | quote }}
+              value: {{ .Values.timescalewriter.externaldb.sslMode | default "" | quote }}
             - name: MG_TIMESCALE_SSL_CERT
-              value: {{ .Values.timescaledb.sslCert | quote }}
+              value: {{ .Values.timescalewriter.externaldb.sslCert | default "" | quote }}
             - name: MG_TIMESCALE_SSL_KEY
-              value: {{ .Values.timescaledb.sslKey | quote }}
+              value: {{ .Values.timescalewriter.externaldb.sslKey | default "" | quote }}
             - name: MG_TIMESCALE_SSL_ROOT_CERT
-              value: {{ .Values.timescaledb.sslRootCert | quote }}
+              value: {{ .Values.timescalewriter.externaldb.sslRootCert | default "" | quote }}
             - name: SMQ_MESSAGE_BROKER_URL
               value: {{ .Values.supermq.nats.enabled | ternary (printf "nats://%s-nats:%d" .Release.Name (.Values.supermq.nats.config.nats.port | int )) .Values.supermq.nats.externalAddress }}
             - name: MG_TIMESCALE_WRITER_INSTANCE_ID

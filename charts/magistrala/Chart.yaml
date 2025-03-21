@@ -34,17 +34,18 @@ dependencies:
   - name: postgresql
     version: "15.2.10"
     repository: "@bitnami"
-    alias: postgresdb
-    condition: postgresdb.enabled
-
-  - name: postgresql
-    version: "15.2.10"
-    repository: "@bitnami"
-    alias: timescaledb
-    condition: timescaledb.enabled
-
-  - name: postgresql
-    version: "15.2.10"
-    repository: "@bitnami"
     alias: postgresqlre
     condition: postgresqlre.enabled
+
+  - name: postgresql
+    version: "15.2.10"
+    repository: "@bitnami"
+    alias: postgresdbrw
+    condition: postgresdbrw.enabled
+
+  - name: postgresql
+    version: "15.2.10"
+    repository: "@bitnami"
+    alias: timescaledbrw
+    condition: timescaledbrw.enabled
+

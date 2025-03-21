@@ -1,7 +1,7 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.postgresdb.reader.enabled }}
+{{- if .Values.postgresreader.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

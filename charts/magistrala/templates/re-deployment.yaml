@@ -1,5 +1,6 @@
 # Copyright (c) Abstract Machines
 # SPDX-License-Identifier: Apache-2.0
+{{- if .Values.re.enabled }}
 
 ---
 apiVersion: v1
@@ -47,7 +48,7 @@ spec:
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.re.image.pullPolicy }}
           env:
             - name: MG_RE_LOG_LEVEL
-              value: {{ default .Values.supermq.defaults.sendTelemetry  .Values.re.logLevel | quote }}
+              value: {{ default .Values.supermq.defaults.logLevel  .Values.re.logLevel | quote }}
             - name: MG_RE_HTTP_PORT
               value: {{ .Values.re.httpPort | quote }}
             - name: MG_RE_HTTP_HOST
@@ -128,3 +129,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

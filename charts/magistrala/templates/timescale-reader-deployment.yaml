@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 {{- if .Values.timescalereader.enabled }}
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -73,27 +72,53 @@ spec:
             - name: SMQ_AUTH_GRPC_SERVER_CA_CERTS
               value: {{ .Values.supermq.auth.grpcServerCACerts | quote }}
             - name: MG_TIMESCALE_HOST
-            {{- if .Values.timescaledb.enabled }}
-              value: "{{ .Release.Name }}-timescaledb"
-            {{- else }}
-              value: {{ .Values.timescaledb.host | quote }}
-            {{- end }}
+              value: {{ if and .Values.timescalereader.externaldb.host (not .Values.timescaledbrw.enabled) }}
+                        {{- .Values.timescalereader.externaldb.host | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- printf "%s-timescaledbrw" .Release.Name }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalereader.externaldb.host must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_PORT
-              value: {{ .Values.timescaledb.port | quote  }}
+              value: {{ if and .Values.timescalereader.externaldb.port (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalereader.externaldb.port | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.service.ports.postgresql | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalereader.externaldb.port must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_USER
-              value: {{ .Values.timescaledb.username | quote  }}
+              value: {{ if and .Values.timescalereader.externaldb.username (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalereader.externaldb.username | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.auth.username | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalereader.externaldb.username must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_PASS
-              value: {{ .Values.timescaledb.password | quote  }}
+              value: {{ if and .Values.timescalereader.externaldb.password (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalereader.externaldb.password | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.auth.password | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalereader.externaldb.password must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_NAME
-              value: {{ .Values.timescaledb.database | quote }}
+              value: {{ if and .Values.timescalereader.externaldb.database (not .Values.timescaledbrw.enabled) }}
+                          {{- .Values.timescalereader.externaldb.database | quote }}
+                      {{- else if .Values.timescaledbrw.enabled }}
+                          {{- .Values.timescaledbrw.global.postgresql.auth.database | quote }}
+                      {{- else }}
+                          {{- fail "either timescaledbrw must be enabled or .Values.timescalereader.externaldb.database must be provided"  }}
+                      {{- end }}
             - name: MG_TIMESCALE_SSL_MODE
-              value: {{ .Values.timescaledb.sslMode | quote }}
+              value: {{ .Values.timescalereader.externaldb.sslMode | default "" | quote }}
             - name: MG_TIMESCALE_SSL_CERT
-              value: {{ .Values.timescaledb.sslCert | quote }}
+              value: {{ .Values.timescalereader.externaldb.sslCert | default "" | quote }}
             - name: MG_TIMESCALE_SSL_KEY
-              value: {{ .Values.timescaledb.sslKey | quote }}
+              value: {{ .Values.timescalereader.externaldb.sslKey | default "" | quote }}
             - name: MG_TIMESCALE_SSL_ROOT_CERT
-              value: {{ .Values.timescaledb.sslRootCert | quote }}
+              value: {{ .Values.timescalereader.externaldb.sslRootCert | default "" | quote }}
             - name: MG_TIMESCALE_READER_INSTANCE_ID
               value: {{ .Values.timescalereader.instanceId | quote }}
           ports:

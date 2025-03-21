@@ -12,7 +12,7 @@ spec:
     app: {{ .Release.Name }}
     component: timescaledb-reader
   ports:
-    - port: {{ .Values.timescalereader.httpPort }}
+    - port: {{ .Values.timescalereader.httpPort | int }}
       protocol: TCP
       name: {{ .Release.Name }}-timescaledb-reader-{{ .Values.timescalereader.httpPort }}
 {{- end }}

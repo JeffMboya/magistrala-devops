@@ -63,3 +63,29 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{- define "readerconfig" -}}
+{{- if and .Values.timescalereader.enable (not .Values.postgresreader.enable)  -}}
+    {{- printf "{ \"host\": \"%s-timescalereader\", \"port\": \"%d\", \"ingress\": true }" .Release.Name .Values.timescalereader.httpPort | fromJson | toJson -}}
+{{- else if and .Values.timescalereader.enable (not .Values.postgresreader.enable) -}}
+     {{- printf "{ \"host\": \"postgres\", \"port\": \"%d\", \"ingress\": true }" .Values.postgresreader.httpPort | fromJson | toJson -}}
+{{- else if and .Values.timescalereader.enable (not .Values.postgresreader.enable) -}}
+    {{ fail "Invalid configuration: Both Postgres and Timescale cannot be enabled together in a conflicting manner" }}
+{{- else -}}
+    {{- printf "{ \"ingress\": false }"  | fromJson | toJson -}}
+{{- end }}
+{{- end }}
+
+
+{{- define "writerconfig" -}}
+{{- if and .Values.timescalewriter.enable (not .Values.postgreswriter.enable)  -}}
+    {{- printf "{ \"host\": \"%s-timescalewriter\", \"port\": \"%d\", \"ingress\": true }" .Release.Name .Values.timescalewriter.httpPort | fromJson | toJson -}}
+{{- else if and .Values.timescalewriter.enable (not .Values.postgreswriter.enable) -}}
+     {{- printf "{ \"host\": \"postgres\", \"port\": \"%d\", \"ingress\": true }" .Values.postgreswriter.httpPort | fromJson | toJson -}}
+{{- else if and .Values.timescalewriter.enable (not .Values.postgreswriter.enable) -}}
+    {{ fail "Invalid configuration: Both Postgres and Timescale cannot be enabled together in a conflicting manner" }}
+{{- else -}}
+    {{- printf "{ \"ingress\": false }"  | fromJson | toJson -}}
+{{- end }}
+{{- end }}

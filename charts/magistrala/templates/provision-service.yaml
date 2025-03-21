@@ -12,6 +12,6 @@ spec:
     component: provision
   ports:
     - protocol: TCP
-      port: {{ .Values.provision.httpPort }}
+      port: {{ .Values.provision.httpPort | int }}
       name: {{ .Release.Name }}-provision-{{ .Values.provision.httpPort }}
 {{- end }}
